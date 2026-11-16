@@ -1,0 +1,626 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Place an Order | R-buy</title>
+
+    <meta name="description"
+        content="Request any product through R-buy. Tell us what you need and we'll source it for you.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            background: #0b0b0b;
+            color: #ffffff;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px;
+            background: #111111;
+            border: 1px solid #292929;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+        }
+
+        .input-field::placeholder {
+            color: #777777;
+        }
+
+        select.input-field {
+            cursor: pointer;
+        }
+
+        .section-card {
+            background: #111111;
+            border: 1px solid #242424;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 14px;
+            color: #c4c4c4;
+            margin-bottom: 8px;
+        }
+
+        .required {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- NAVIGATION -->
+<header class="border-b border-gray-800">
+    <div class="max-w-5xl mx-auto px-5 py-5 flex justify-between items-center">
+        <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+           class="text-2xl font-bold tracking-tight">
+            R<span class="text-blue-500">-</span>buy
+        </a>
+
+        <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+           class="text-gray-400 hover:text-white text-sm">
+            ← Back to Home
+        </a>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main class="max-w-3xl mx-auto px-5 py-12">
+
+    <div class="text-center mb-10">
+        <p class="text-blue-500 uppercase tracking-widest text-sm mb-3">
+            Retail Buy
+        </p>
+
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+            Place Your Order
+        </h1>
+
+        <p class="text-gray-400 max-w-xl mx-auto">
+            Tell us what you want. We'll investigate availability,
+            sourcing options, pricing and delivery.
+        </p>
+    </div>
+
+    <!-- ORDER FORM -->
+    <form id="orderForm" class="space-y-6">
+
+        <!-- CUSTOMER DETAILS -->
+        <section class="section-card space-y-5">
+
+            <div>
+                <h2 class="text-xl font-semibold">Customer Information</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Details we'll use to identify and contact you.
+                </p>
+            </div>
+
+            <div>
+                <label for="customer_name" class="field-label">
+                    Full Name <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="customer_name"
+                    name="customer_name"
+                    class="input-field"
+                    placeholder="Your full name"
+                    autocomplete="name"
+                    minlength="2"
+                    maxlength="100"
+                    required>
+            </div>
+
+            <div>
+                <label for="whatsapp" class="field-label">
+                    WhatsApp Number <span class="required">*</span>
+                </label>
+
+                <input
+                    type="tel"
+                    id="whatsapp"
+                    name="whatsapp"
+                    class="input-field"
+                    placeholder="+254 7XX XXX XXX"
+                    autocomplete="tel"
+                    maxlength="25"
+                    required>
+
+                <p class="text-xs text-gray-500 mt-2">
+                    Include your country code, e.g. +254.
+                </p>
+            </div>
+
+            <div>
+                <label for="email" class="field-label">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="input-field"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    maxlength="254">
+
+                <p class="text-xs text-gray-500 mt-2">
+                    Optional. Useful for receiving order updates.
+                </p>
+            </div>
+        </section>
+
+        <!-- PRODUCT DETAILS -->
+        <section class="section-card space-y-5">
+
+            <div>
+                <h2 class="text-xl font-semibold">Product Details</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Describe exactly what you want us to source.
+                </p>
+            </div>
+
+            <div>
+                <label for="product_name" class="field-label">
+                    Product Name <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="product_name"
+                    name="product_name"
+                    class="input-field"
+                    placeholder="e.g. Samsung Galaxy S25"
+                    maxlength="200"
+                    required>
+            </div>
+
+            <div>
+                <label for="product_description" class="field-label">
+                    Product Description <span class="required">*</span>
+                </label>
+
+                <textarea
+                    id="product_description"
+                    name="product_description"
+                    class="input-field"
+                    rows="4"
+                    maxlength="3000"
+                    placeholder="Colour, size, model, specifications or other requirements..."
+                    required></textarea>
+            </div>
+
+            <div>
+                <label for="quantity" class="field-label">
+                    Quantity <span class="required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    id="quantity"
+                    name="quantity"
+                    class="input-field"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    value="1"
+                    required>
+            </div>
+
+            <div>
+                <label for="reference_url" class="field-label">
+                    Product Reference Link
+                </label>
+
+                <input
+                    type="url"
+                    id="reference_url"
+                    name="reference_url"
+                    class="input-field"
+                    placeholder="https://example.com/product">
+
+                <p class="text-xs text-gray-500 mt-2">
+                    Optional. Paste a product link if you have one.
+                </p>
+            </div>
+        </section>
+
+        <!-- BUDGET -->
+        <section class="section-card space-y-5">
+
+            <div>
+                <h2 class="text-xl font-semibold">Your Budget</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Help us identify suitable sourcing options.
+                </p>
+            </div>
+
+            <div>
+                <label for="budget" class="field-label">
+                    Budget Amount (KES) <span class="required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    id="budget"
+                    name="budget"
+                    class="input-field"
+                    min="0"
+                    max="999999999"
+                    step="0.01"
+                    placeholder="e.g. 25000"
+                    required>
+            </div>
+
+            <div>
+                <label for="budget_type" class="field-label">
+                    Budget Applies To <span class="required">*</span>
+                </label>
+
+                <select
+                    id="budget_type"
+                    name="budget_type"
+                    class="input-field"
+                    required>
+
+                    <option value="total">Total order budget</option>
+                    <option value="per_item">Budget per item</option>
+                </select>
+            </div>
+
+            <p class="text-xs text-gray-500">
+                Your budget helps us source suitable options.
+                Final pricing will be confirmed before payment.
+            </p>
+        </section>
+
+        <!-- DELIVERY -->
+        <section class="section-card space-y-5">
+
+            <div>
+                <h2 class="text-xl font-semibold">Delivery Information</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Where should your order be delivered?
+                </p>
+            </div>
+
+            <div>
+                <label for="delivery_location" class="field-label">
+                    Delivery Location <span class="required">*</span>
+                </label>
+
+                <textarea
+                    id="delivery_location"
+                    name="delivery_location"
+                    class="input-field"
+                    rows="3"
+                    maxlength="1000"
+                    placeholder="County, town, estate, building or preferred delivery point..."
+                    required></textarea>
+            </div>
+        </section>
+
+        <!-- TERMS -->
+        <section class="section-card">
+
+            <label class="flex gap-3 items-start cursor-pointer">
+                <input
+                    type="checkbox"
+                    id="consent"
+                    class="mt-1 accent-blue-500"
+                    required>
+
+                <span class="text-sm text-gray-400">
+                    I confirm that my information is accurate and
+                    authorize R-buy to contact me regarding this order,
+                    including sourcing, quotations and delivery.
+                </span>
+            </label>
+        </section>
+
+        <!-- SUBMIT -->
+        <button
+            type="submit"
+            id="submitButton"
+            class="w-full bg-blue-600 hover:bg-blue-700
+            disabled:opacity-50 disabled:cursor-not-allowed
+            text-white font-semibold py-4 rounded-xl
+            transition">
+
+            Submit Order
+        </button>
+
+        <p class="text-center text-xs text-gray-500">
+            Submitting an order does not require immediate payment.
+            We'll contact you with the quotation first.
+        </p>
+
+    </form>
+
+    <!-- SUCCESS MESSAGE -->
+    <section
+        id="successMessage"
+        class="hidden mt-8 section-card text-center">
+
+        <div class="text-green-400 text-4xl mb-4">✓</div>
+
+        <h2 class="text-2xl font-bold mb-3">
+            Order Submitted Successfully!
+        </h2>
+
+        <p class="text-gray-400 mb-5">
+            Your request has been received and is now under review.
+        </p>
+
+        <div class="bg-black rounded-xl p-5 mb-5">
+            <p class="text-sm text-gray-500 mb-2">
+                Your Order Reference
+            </p>
+
+            <p
+                id="orderReference"
+                class="text-2xl font-bold text-blue-400">
+            </p>
+
+            <button
+                type="button"
+                id="copyReference"
+                class="text-sm text-gray-400 hover:text-white mt-3">
+                Copy Reference
+            </button>
+        </div>
+
+        <p class="text-gray-400 text-sm leading-6">
+            Our team will contact you via WhatsApp within 24 hours
+            to discuss product availability, pricing and delivery.
+        </p>
+
+        <p class="text-blue-400 mt-5 font-medium">
+            Thank you for choosing R-buy.
+        </p>
+
+        <p class="text-gray-500 text-sm mt-2">
+            You can buy anything.
+        </p>
+
+        <a
+            href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+            class="inline-block mt-6 text-blue-400 hover:text-blue-300">
+            Return to Homepage →
+        </a>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="border-t border-gray-800 mt-16">
+    <div class="max-w-5xl mx-auto px-5 py-8 text-center">
+        <p class="text-gray-500 text-sm">
+            © 2026 R-buy. You can buy anything.
+        </p>
+    </div>
+</footer>
+
+<script>
+    // =========================================
+    // SUPABASE CONFIGURATION
+    // =========================================
+
+    const SUPABASE_URL =
+        "https://ixuohpgqpuvjdbigmhje.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+    // =========================================
+    // HOMEPAGE PREFILL SUPPORT
+    // =========================================
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const productPrefill = urlParams.get("product");
+    const locationPrefill = urlParams.get("delivery_location");
+
+    if (productPrefill) {
+        document.getElementById("product_name").value =
+            productPrefill;
+    }
+
+    if (locationPrefill) {
+        document.getElementById("delivery_location").value =
+            locationPrefill;
+    }
+
+    // =========================================
+    // ORDER SUBMISSION
+    // =========================================
+
+    const orderForm =
+        document.getElementById("orderForm");
+
+    const submitButton =
+        document.getElementById("submitButton");
+
+    const successMessage =
+        document.getElementById("successMessage");
+
+    const orderReferenceElement =
+        document.getElementById("orderReference");
+
+    orderForm.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        if (!orderForm.checkValidity()) {
+            orderForm.reportValidity();
+            return;
+        }
+
+        const customerName =
+            document.getElementById("customer_name")
+            .value.trim();
+
+        const whatsapp =
+            document.getElementById("whatsapp")
+            .value.trim();
+
+        const email =
+            document.getElementById("email")
+            .value.trim();
+
+        const productName =
+            document.getElementById("product_name")
+            .value.trim();
+
+        const productDescription =
+            document.getElementById("product_description")
+            .value.trim();
+
+        const quantity =
+            Number(document.getElementById("quantity").value);
+
+        const budget =
+            Number(document.getElementById("budget").value);
+
+        const budgetType =
+            document.getElementById("budget_type").value;
+
+        const referenceUrl =
+            document.getElementById("reference_url")
+            .value.trim();
+
+        const deliveryLocation =
+            document.getElementById("delivery_location")
+            .value.trim();
+
+        // Additional validation
+        if (customerName.length < 2) {
+            alert("Please enter your full name.");
+            return;
+        }
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+
+        if (!Number.isFinite(budget) || budget < 0) {
+            alert("Please enter a valid budget.");
+            return;
+        }
+
+        // Generate UUID locally so we can show a reference
+        // without needing public SELECT permission.
+        const orderId = crypto.randomUUID();
+
+        const orderReference =
+            "RBUY-" + orderId.substring(0, 8).toUpperCase();
+
+        const orderData = {
+            id: orderId,
+
+            customer_name: customerName,
+            email: email || null,
+
+            product_name: productName,
+            product_description: productDescription,
+            quantity: quantity,
+            budget: budget,
+            budget_type: budgetType,
+
+            reference_url: referenceUrl || null,
+
+            whatsapp: whatsapp,
+            delivery_location: deliveryLocation,
+
+            status: "pending_review",
+            payment_status: "unpaid"
+        };
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting Order...";
+
+        try {
+
+            const { error } =
+                await supabaseClient
+                .from("orders")
+                .insert([orderData]);
+
+            if (error) {
+                throw error;
+            }
+
+            // Display confirmation
+            orderReferenceElement.textContent =
+                orderReference;
+
+            orderForm.classList.add("hidden");
+            successMessage.classList.remove("hidden");
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+        } catch (error) {
+
+            console.error("Order submission error:", error);
+
+            alert(
+                "We could not submit your order.\n\n" +
+                error.message +
+                "\n\nPlease try again."
+            );
+
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit Order";
+        }
+    });
+
+    // =========================================
+    // COPY ORDER REFERENCE
+    // =========================================
+
+    document.getElementById("copyReference")
+    .addEventListener("click", async function() {
+
+        const reference =
+            orderReferenceElement.textContent;
+
+        try {
+            await navigator.clipboard.writeText(reference);
+
+            this.textContent = "Copied!";
+
+        } catch {
+            alert("Your order reference is: " + reference);
+        }
+    });
+</script>
+
+</body>
+</html>
