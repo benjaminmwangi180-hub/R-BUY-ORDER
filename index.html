@@ -93,8 +93,6 @@
       background: #2563eb;
     }
 
-    /* FORM CARDS */
-
     .section-card {
       position: relative;
       background: white;
@@ -141,8 +139,7 @@
       outline: none;
       font-family: 'DM Sans', sans-serif;
       font-size: 14px;
-      transition: border .2s ease, box-shadow .2s ease,
-                  background .2s ease;
+      transition: border .2s ease, box-shadow .2s ease, background .2s ease;
     }
 
     .input-field:focus {
@@ -170,8 +167,6 @@
       line-height: 1.7;
       color: #a1a1aa;
     }
-
-    /* CATEGORY SELECTOR */
 
     .category-option {
       position: relative;
@@ -220,8 +215,6 @@
       color: #27272a;
     }
 
-    /* PROGRESS */
-
     .progress-line {
       height: 5px;
       border-radius: 20px;
@@ -237,7 +230,19 @@
       transition: width .35s ease;
     }
 
-    /* DECORATIVE CART */
+    .catalogue-notice {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      border-radius: 13px;
+      padding: 16px;
+    }
+
+    .catalogue-selection {
+      border: 1px dashed #93c5fd;
+      background: #f8fbff;
+      border-radius: 13px;
+      padding: 15px;
+    }
 
     .floating-cart {
       position: fixed;
@@ -259,8 +264,6 @@
         transform: translateY(-3px) rotate(2deg);
       }
     }
-
-    /* SUCCESS */
 
     .success-card {
       background: white;
@@ -316,7 +319,6 @@
 <!-- NAVIGATION -->
 
 <header class="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-xl">
-
   <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
 
     <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
@@ -335,7 +337,6 @@
     </span>
 
   </nav>
-
 </header>
 
 
@@ -414,7 +415,7 @@
   </section>
 
 
-  <!-- ORDER FORM AREA -->
+  <!-- ORDER FORM -->
 
   <section class="relative mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-8">
 
@@ -453,7 +454,6 @@
       <section class="section-card space-y-6">
 
         <div class="flex items-start gap-4">
-
           <span class="section-number">01</span>
 
           <div>
@@ -462,7 +462,6 @@
               Just enough information for us to identify and contact you.
             </p>
           </div>
-
         </div>
 
         <div>
@@ -503,9 +502,7 @@
           </div>
 
           <div>
-            <label for="email" class="field-label">
-              Email Address
-            </label>
+            <label for="email" class="field-label">Email Address</label>
 
             <input
               type="email"
@@ -529,16 +526,70 @@
       <section class="section-card space-y-6">
 
         <div class="flex items-start gap-4">
-
           <span class="section-number">02</span>
 
           <div>
             <h2 class="text-lg font-bold">What are we finding?</h2>
             <p class="mt-1 text-xs leading-6 text-zinc-400">
-              Choose a category and tell us the product. No need to repeat
-              information you've already provided.
+              Your catalogue selection will appear here. You can edit any detail
+              or describe a completely different product.
             </p>
           </div>
+        </div>
+
+
+        <!-- CATALOGUE NOTICE -->
+
+        <div class="catalogue-notice">
+
+          <div class="flex items-start gap-3">
+            <span class="text-xl">ℹ️</span>
+
+            <div>
+              <h3 class="text-sm font-bold text-blue-900">
+                A note about our catalogue
+              </h3>
+
+              <p class="mt-2 text-xs leading-6 text-blue-800">
+                All products displayed on R-BUY are for illustration and product
+                discovery purposes. Listing a product does not mean it is
+                currently in stock or immediately available. Once we have
+                sourced and confirmed the availability of your requested
+                product, we will notify you with the details.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- SELECTED CATALOGUE DETAILS -->
+
+        <div id="catalogueSelection" class="catalogue-selection hidden">
+
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="mono text-[9px] tracking-widest text-blue-500">
+                YOUR CATALOGUE SELECTION
+              </p>
+
+              <h3 class="mt-1 text-sm font-bold text-zinc-800">
+                Product details received
+              </h3>
+            </div>
+
+            <span class="rounded-full bg-blue-100 px-3 py-1 text-[9px] font-bold text-blue-600">
+              EDITABLE
+            </span>
+          </div>
+
+          <p id="catalogueSummary"
+             class="mt-3 text-xs leading-6 text-zinc-600"></p>
+
+          <p class="mt-2 text-[10px] leading-5 text-zinc-400">
+            These details came from your catalogue selection. You can change
+            them below before submitting your request.
+          </p>
 
         </div>
 
@@ -608,12 +659,51 @@
         </div>
 
 
+        <!-- SUBCATEGORY -->
+
+        <div>
+          <label for="subcategory" class="field-label">
+            Subcategory <span class="text-zinc-400 font-normal">(Optional)</span>
+          </label>
+
+          <input
+            type="text"
+            id="subcategory"
+            class="input-field"
+            placeholder="e.g. Audio, Kitchen Appliances, Footwear"
+            maxlength="150">
+
+          <p class="helper-text">
+            The general product group from the catalogue, if applicable.
+          </p>
+        </div>
+
+
+        <!-- PRODUCT TYPE -->
+
+        <div>
+          <label for="product_type" class="field-label">
+            Product Type <span class="text-zinc-400 font-normal">(Optional)</span>
+          </label>
+
+          <input
+            type="text"
+            id="product_type"
+            class="input-field"
+            placeholder="e.g. Earpods, Air Fryer, Running Shoes"
+            maxlength="150">
+
+          <p class="helper-text">
+            You don't have to know the exact product type. A simple description works too.
+          </p>
+        </div>
+
+
         <!-- PRODUCT NAME -->
 
         <div>
-
           <label for="product_name" class="field-label">
-            What product do you want? <span class="required">*</span>
+            Product Name <span class="required">*</span>
           </label>
 
           <input
@@ -626,18 +716,56 @@
             required>
 
           <p class="helper-text">
-            A product name, model or even a simple description is enough to get started.
+            Enter the product you're looking for. If you selected an item from
+            the catalogue, its name will be filled in automatically.
           </p>
-
         </div>
 
 
-        <!-- OPTIONAL DESCRIPTION -->
+        <!-- BRAND AND MODEL -->
+
+        <div class="grid gap-5 sm:grid-cols-2">
+
+          <div>
+            <label for="brand" class="field-label">
+              Preferred Brand <span class="text-zinc-400 font-normal">(Optional)</span>
+            </label>
+
+            <input
+              type="text"
+              id="brand"
+              class="input-field"
+              placeholder="e.g. Apple, Samsung, Nike"
+              maxlength="120">
+          </div>
+
+          <div>
+            <label for="model" class="field-label">
+              Model / Version <span class="text-zinc-400 font-normal">(Optional)</span>
+            </label>
+
+            <input
+              type="text"
+              id="model"
+              class="input-field"
+              placeholder="e.g. AirPods Pro 2"
+              maxlength="150">
+          </div>
+
+        </div>
+
+        <p class="helper-text -mt-3">
+          Brand and model are optional. If you're unsure, leave them blank.
+          Our team can help identify suitable options.
+        </p>
+
+
+        <!-- ADDITIONAL DETAILS -->
 
         <div>
-
           <label for="product_description" class="field-label">
-            Additional Details <span class="text-zinc-400 font-normal">(Optional)</span>
+            Additional Details
+            <span class="text-zinc-400 font-normal">(Optional)</span>
           </label>
 
           <textarea
@@ -646,12 +774,11 @@
             class="input-field"
             rows="4"
             maxlength="3000"
-            placeholder="Any particular colour, size, model, brand or specifications? Add them here if you have them."></textarea>
+            placeholder="Any particular colour, size, model, specifications or other preferences? Add them here."></textarea>
 
           <p class="helper-text">
             Don't have all the details? No problem. We can clarify with you during the sourcing process.
           </p>
-
         </div>
 
 
@@ -687,7 +814,6 @@
               name="reference_url"
               class="input-field"
               placeholder="https://example.com/product">
-
           </div>
 
         </div>
@@ -708,7 +834,6 @@
       <section class="section-card space-y-6">
 
         <div class="flex items-start gap-4">
-
           <span class="section-number">03</span>
 
           <div>
@@ -717,11 +842,9 @@
               Give us a price range to help guide the search.
             </p>
           </div>
-
         </div>
 
         <div>
-
           <label for="budget" class="field-label">
             Budget Amount (KES) <span class="required">*</span>
           </label>
@@ -742,11 +865,9 @@
               placeholder="e.g. 25000"
               required>
           </div>
-
         </div>
 
         <div>
-
           <label for="budget_type" class="field-label">
             What does this budget cover? <span class="required">*</span>
           </label>
@@ -761,7 +882,6 @@
             <option value="per_item">Budget per item</option>
 
           </select>
-
         </div>
 
         <p class="helper-text">
@@ -777,7 +897,6 @@
       <section class="section-card space-y-6">
 
         <div class="flex items-start gap-4">
-
           <span class="section-number">04</span>
 
           <div>
@@ -786,11 +905,9 @@
               Tell us where you'd like your order delivered.
             </p>
           </div>
-
         </div>
 
         <div>
-
           <label for="delivery_location" class="field-label">
             Delivery Location <span class="required">*</span>
           </label>
@@ -807,7 +924,6 @@
           <p class="helper-text">
             Include enough detail to help us estimate delivery arrangements.
           </p>
-
         </div>
 
       </section>
@@ -1023,31 +1139,111 @@
   const categoryCards =
     document.querySelectorAll(".category-option");
 
+  const catalogueSelection =
+    document.getElementById("catalogueSelection");
+
+  const catalogueSummary =
+    document.getElementById("catalogueSummary");
+
 
   // =========================================
-  // HOMEPAGE PREFILL
+  // URL PREFILL
+  // Supports landing-page catalogue parameters:
+  // product, category, subcategory, type,
+  // brand, model, delivery_location
   // =========================================
 
   const urlParams =
     new URLSearchParams(window.location.search);
 
-  const productPrefill =
-    urlParams.get("product");
+  function getParam(name) {
+    return (urlParams.get(name) || "").trim();
+  }
 
-  const categoryPrefill =
-    urlParams.get("category");
+  const productPrefill = getParam("product");
+  const categoryPrefill = getParam("category");
+  const subcategoryPrefill = getParam("subcategory");
+  const typePrefill = getParam("type");
+  const brandPrefill = getParam("brand");
+  const modelPrefill = getParam("model");
+  const locationPrefill = getParam("delivery_location");
 
-  const locationPrefill =
-    urlParams.get("delivery_location");
 
+  // Fill editable fields
 
   if (productPrefill) {
     productNameInput.value = productPrefill;
   }
 
+  if (subcategoryPrefill) {
+    document.getElementById("subcategory").value =
+      subcategoryPrefill;
+  }
+
+  if (typePrefill) {
+    document.getElementById("product_type").value =
+      typePrefill;
+  }
+
+  if (brandPrefill) {
+    document.getElementById("brand").value =
+      brandPrefill;
+  }
+
+  if (modelPrefill) {
+    document.getElementById("model").value =
+      modelPrefill;
+  }
+
   if (locationPrefill) {
     document.getElementById("delivery_location").value =
       locationPrefill;
+  }
+
+
+  // Show catalogue selection summary
+
+  const catalogueDetails = [
+    categoryPrefill,
+    subcategoryPrefill,
+    typePrefill,
+    brandPrefill,
+    modelPrefill
+  ].filter(Boolean);
+
+  if (catalogueDetails.length > 0 || productPrefill) {
+
+    catalogueSelection.classList.remove("hidden");
+
+    const summaryParts = [];
+
+    if (categoryPrefill) {
+      summaryParts.push("Category: " + categoryPrefill);
+    }
+
+    if (subcategoryPrefill) {
+      summaryParts.push("Subcategory: " + subcategoryPrefill);
+    }
+
+    if (typePrefill) {
+      summaryParts.push("Type: " + typePrefill);
+    }
+
+    if (productPrefill) {
+      summaryParts.push("Product: " + productPrefill);
+    }
+
+    if (brandPrefill) {
+      summaryParts.push("Brand: " + brandPrefill);
+    }
+
+    if (modelPrefill) {
+      summaryParts.push("Model: " + modelPrefill);
+    }
+
+    catalogueSummary.textContent =
+      summaryParts.join("  •  ");
+
   }
 
 
@@ -1058,14 +1254,14 @@
   function selectCategory(category) {
 
     const matchingCard = Array.from(categoryCards).find(card => {
-      return card.dataset.category === category;
+      return card.dataset.category.toLowerCase() === category.toLowerCase();
     });
 
     if (!matchingCard) {
-      return;
+      return false;
     }
 
-    categoryInput.value = category;
+    categoryInput.value = matchingCard.dataset.category;
 
     categoryCards.forEach(card => {
       card.classList.remove("selected");
@@ -1078,10 +1274,14 @@
     categoryError.classList.add("hidden");
 
     categoryStatus.textContent =
-      "Selected category: " + category;
+      "Selected category: " + matchingCard.dataset.category;
 
     categoryStatus.classList.remove("text-red-500");
     categoryStatus.classList.add("text-blue-500");
+
+    updateProgress();
+
+    return true;
   }
 
 
@@ -1090,9 +1290,7 @@
     card.setAttribute("aria-pressed", "false");
 
     card.addEventListener("click", function() {
-
       selectCategory(this.dataset.category);
-
     });
 
   });
@@ -1101,7 +1299,14 @@
   // Automatically select category from landing page.
 
   if (categoryPrefill) {
-    selectCategory(categoryPrefill);
+    const selected = selectCategory(categoryPrefill);
+
+    if (!selected) {
+      categoryStatus.textContent =
+        "Please choose the category that best describes your product.";
+
+      categoryInput.value = "";
+    }
   }
 
 
@@ -1133,7 +1338,7 @@
 
       const field = document.getElementById(id);
 
-      if (field && field.value.trim() !== "") {
+      if (field && String(field.value).trim() !== "") {
         completed++;
       }
 
@@ -1150,22 +1355,14 @@
   }
 
 
-  trackedFields.forEach(id => {
-
-    const field = document.getElementById(id);
-
-    if (field) {
-      field.addEventListener("input", updateProgress);
-      field.addEventListener("change", updateProgress);
-    }
-
+  orderForm.querySelectorAll("input, textarea, select").forEach(field => {
+    field.addEventListener("input", updateProgress);
+    field.addEventListener("change", updateProgress);
   });
 
 
   categoryCards.forEach(card => {
-
     card.addEventListener("click", updateProgress);
-
   });
 
 
@@ -1203,6 +1400,18 @@
 
     const category =
       categoryInput.value;
+
+    const subcategory =
+      document.getElementById("subcategory").value.trim();
+
+    const productType =
+      document.getElementById("product_type").value.trim();
+
+    const brand =
+      document.getElementById("brand").value.trim();
+
+    const model =
+      document.getElementById("model").value.trim();
 
     const quantity =
       Number(document.getElementById("quantity").value);
@@ -1243,7 +1452,7 @@
       return;
     }
 
-    if (!Number.isInteger(quantity) || quantity < 1) {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
       alert("Please enter a valid quantity.");
       return;
     }
@@ -1252,6 +1461,37 @@
       alert("Please enter a valid budget.");
       return;
     }
+
+
+    // COMBINE CATALOGUE DETAILS WITH DESCRIPTION
+    // This keeps the existing database schema unchanged.
+
+    const catalogueDescription = [];
+
+    if (subcategory) {
+      catalogueDescription.push("Subcategory: " + subcategory);
+    }
+
+    if (productType) {
+      catalogueDescription.push("Product type: " + productType);
+    }
+
+    if (brand) {
+      catalogueDescription.push("Preferred brand: " + brand);
+    }
+
+    if (model) {
+      catalogueDescription.push("Model: " + model);
+    }
+
+    if (productDescription) {
+      catalogueDescription.push("Customer notes: " + productDescription);
+    }
+
+    const finalProductDescription =
+      catalogueDescription.length > 0
+        ? catalogueDescription.join("\n\n")
+        : "No additional specifications provided.";
 
 
     // UUID AND REFERENCE
@@ -1263,6 +1503,7 @@
 
 
     // DATABASE PAYLOAD
+    // Existing field names are preserved.
 
     const orderData = {
 
@@ -1276,8 +1517,7 @@
 
       product_name: productName,
 
-      product_description:
-        productDescription || "No additional specifications provided.",
+      product_description: finalProductDescription,
 
       quantity: quantity,
 
