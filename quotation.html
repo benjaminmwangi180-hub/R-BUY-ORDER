@@ -1,0 +1,804 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#f5f3ed">
+  <meta name="description" content="Review and respond to your R-BUY quotation.">
+
+  <title>Your Quotation | R-BUY</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper: #f5f3ed;
+      --ink: #191a17;
+      --muted: #77776e;
+      --line: #e4e1d8;
+      --green: #244b38;
+      --green-light: #e6eee8;
+      --white: #ffffff;
+      --red: #a43d35;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 30px 18px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 28px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 35px;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+    }
+
+    .logo span {
+      color: var(--green);
+    }
+
+    .tagline {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 34px;
+      box-shadow: 0 12px 35px rgba(30, 30, 20, 0.035);
+    }
+
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin-bottom: 17px;
+    }
+
+    h1 {
+      font-size: clamp(29px, 6vw, 43px);
+      line-height: 1.1;
+      letter-spacing: -1.8px;
+      margin-bottom: 12px;
+    }
+
+    .intro {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .order-meta {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 15px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 27px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .meta-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .meta-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .product-box {
+      background: #faf9f6;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .product-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 9px;
+    }
+
+    .product-description {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .delivery-info {
+      margin-top: 16px;
+      padding-top: 15px;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0eee8;
+      font-size: 14px;
+    }
+
+    .price-row span:first-child {
+      color: var(--muted);
+    }
+
+    .price-row strong {
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .total-box {
+      background: var(--green);
+      color: white;
+      border-radius: 13px;
+      padding: 22px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .total-label {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .total-amount {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .currency {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .expiry {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 18px 0 25px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 9px;
+      padding: 16px 18px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .accept-btn {
+      background: var(--green);
+      color: white;
+    }
+
+    .accept-btn:hover:not(:disabled) {
+      background: #173b29;
+      transform: translateY(-1px);
+    }
+
+    .decline-btn {
+      background: white;
+      color: var(--red);
+      border: 1px solid #e7d7d4;
+    }
+
+    .decline-btn:hover:not(:disabled) {
+      background: #fbf1ef;
+    }
+
+    .notice {
+      display: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 20px;
+    }
+
+    .notice.success {
+      display: block;
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .notice.error {
+      display: block;
+      background: #f9e9e7;
+      color: var(--red);
+    }
+
+    .notice.info {
+      display: block;
+      background: #f1f0eb;
+      color: var(--ink);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 65px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--line);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 17px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .result {
+      text-align: center;
+      padding: 30px 10px;
+    }
+
+    .result-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--green-light);
+      color: var(--green);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      margin: 0 auto 20px;
+    }
+
+    .result h2 {
+      font-size: 25px;
+      margin-bottom: 12px;
+      letter-spacing: -0.8px;
+    }
+
+    .result p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    footer strong {
+      color: var(--green);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 540px) {
+      body {
+        padding: 15px 12px;
+      }
+
+      header {
+        margin-bottom: 20px;
+      }
+
+      .card {
+        padding: 23px 18px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .total-amount {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <div>
+        <div class="logo">R<span>-</span>BUY</div>
+        <div class="tagline">You can buy anything.</div>
+      </div>
+
+      <div class="tagline">Customer portal</div>
+    </header>
+
+    <main class="card">
+
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        Loading your quotation...
+      </div>
+
+      <div id="quotationContent" class="hidden">
+
+        <div class="eyebrow">Your quotation is ready</div>
+
+        <h1>Review your offer.</h1>
+
+        <p class="intro">
+          We've reviewed your request and prepared the following quotation.
+          Please check the details and let us know your decision.
+        </p>
+
+        <div class="order-meta">
+
+          <div class="meta-item">
+            <span class="meta-label">Order number</span>
+            <span class="meta-value" id="orderNumber">---</span>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-label">Quotation version</span>
+            <span class="meta-value" id="version">---</span>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-label">Currency</span>
+            <span class="meta-value">KES</span>
+          </div>
+
+        </div>
+
+        <div class="product-box">
+
+          <div class="product-title" id="productName"></div>
+
+          <div class="product-description" id="productDescription"></div>
+
+          <div class="delivery-info" id="deliveryInfo"></div>
+
+        </div>
+
+        <div class="section-title">Quotation breakdown</div>
+
+        <div class="price-row">
+          <span>Product price</span>
+          <strong id="productPrice"></strong>
+        </div>
+
+        <div class="price-row">
+          <span>Delivery fee</span>
+          <strong id="deliveryFee"></strong>
+        </div>
+
+        <div class="price-row">
+          <span>Service fee</span>
+          <strong id="serviceFee"></strong>
+        </div>
+
+        <div class="total-box">
+
+          <div>
+            <div class="total-label">Total amount payable</div>
+            <div class="total-amount" id="totalAmount"></div>
+          </div>
+
+          <div class="currency">KES</div>
+
+        </div>
+
+        <div class="expiry" id="expiryText"></div>
+
+        <div id="actionArea">
+
+          <div class="actions">
+
+            <button
+              class="accept-btn"
+              id="acceptBtn"
+              onclick="submitDecision('accepted')"
+            >
+              Accept quotation
+            </button>
+
+            <button
+              class="decline-btn"
+              id="declineBtn"
+              onclick="submitDecision('declined')"
+            >
+              Decline quotation
+            </button>
+
+          </div>
+
+        </div>
+
+        <div id="notice" class="notice"></div>
+
+      </div>
+
+      <div id="resultContent" class="hidden result">
+
+        <div class="result-icon" id="resultIcon">✓</div>
+
+        <h2 id="resultTitle">Response recorded</h2>
+
+        <p id="resultMessage"></p>
+
+      </div>
+
+    </main>
+
+    <footer>
+      <strong>R-BUY</strong><br>
+      You can buy anything.<br>
+      Your sourcing partner.
+    </footer>
+
+  </div>
+
+<script>
+  // =========================================
+  // SUPABASE CONFIGURATION
+  // =========================================
+
+  const SUPABASE_URL =
+    "https://ixuohpgqpuvjdbigmhje.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  // =========================================
+  // PAGE STATE
+  // =========================================
+
+  const params = new URLSearchParams(window.location.search);
+
+  const customerToken = params.get("token");
+
+  let quotationLoaded = false;
+  let submitting = false;
+
+  const loading = document.getElementById("loading");
+  const quotationContent = document.getElementById("quotationContent");
+  const resultContent = document.getElementById("resultContent");
+  const notice = document.getElementById("notice");
+
+  // =========================================
+  // HELPERS
+  // =========================================
+
+  function money(value) {
+    return "KSh " + Number(value).toLocaleString("en-KE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function showNotice(message, type = "error") {
+    notice.className = "notice " + type;
+    notice.textContent = message;
+  }
+
+  function showResult(title, message, accepted) {
+    quotationContent.classList.add("hidden");
+    resultContent.classList.remove("hidden");
+
+    document.getElementById("resultTitle").textContent = title;
+
+    document.getElementById("resultMessage").textContent = message;
+
+    document.getElementById("resultIcon").textContent =
+      accepted ? "✓" : "!";
+  }
+
+  function setButtonsDisabled(disabled) {
+    document.getElementById("acceptBtn").disabled = disabled;
+    document.getElementById("declineBtn").disabled = disabled;
+  }
+
+  // =========================================
+  // LOAD QUOTATION
+  // =========================================
+
+  async function loadQuotation() {
+
+    if (!customerToken) {
+      loading.textContent =
+        "This quotation link is incomplete or invalid.";
+      return;
+    }
+
+    try {
+
+      const { data, error } =
+        await supabaseClient.functions.invoke(
+          "quotation-response",
+          {
+            body: {
+              action: "view",
+              token: customerToken
+            }
+          }
+        );
+
+      if (error) {
+        throw new Error(
+          data?.error || error.message ||
+          "Unable to retrieve quotation."
+        );
+      }
+
+      if (!data || !data.success || !data.quotation) {
+        throw new Error(
+          data?.error || "Quotation could not be loaded."
+        );
+      }
+
+      const q = data.quotation;
+
+      document.getElementById("orderNumber").textContent =
+        "#" + q.order_number;
+
+      document.getElementById("version").textContent =
+        "V" + q.version;
+
+      document.getElementById("productName").textContent =
+        q.product_name || "Product quotation";
+
+      document.getElementById("productDescription").textContent =
+        q.description || "No additional product description provided.";
+
+      document.getElementById("productPrice").textContent =
+        money(q.product_price);
+
+      document.getElementById("deliveryFee").textContent =
+        money(q.delivery_fee);
+
+      document.getElementById("serviceFee").textContent =
+        money(q.service_fee);
+
+      document.getElementById("totalAmount").textContent =
+        money(q.total_amount);
+
+      const deliveryDetails = [];
+
+      if (q.delivery_company) {
+        deliveryDetails.push(
+          "Delivery provider: " + q.delivery_company
+        );
+      }
+
+      if (q.delivery_estimate) {
+        deliveryDetails.push(
+          "Estimated delivery: " + q.delivery_estimate
+        );
+      }
+
+      document.getElementById("deliveryInfo").textContent =
+        deliveryDetails.length
+          ? deliveryDetails.join("\n")
+          : "Delivery details will be coordinated by R-BUY.";
+
+      if (q.expires_at) {
+        const expiryDate = new Date(q.expires_at);
+
+        document.getElementById("expiryText").textContent =
+          "Please respond before " +
+          expiryDate.toLocaleString("en-KE", {
+            dateStyle: "medium",
+            timeStyle: "short"
+          }) + ".";
+      } else {
+        document.getElementById("expiryText").textContent =
+          "Please respond before the quotation expires.";
+      }
+
+      quotationLoaded = true;
+
+      loading.classList.add("hidden");
+      quotationContent.classList.remove("hidden");
+
+    } catch (error) {
+
+      console.error("QUOTATION LOAD ERROR:", error);
+
+      loading.textContent =
+        error.message || "Something went wrong loading your quotation.";
+
+    }
+  }
+
+  // =========================================
+  // CUSTOMER ACCEPTANCE / REJECTION
+  // =========================================
+
+  async function submitDecision(decision) {
+
+    if (!quotationLoaded || submitting) return;
+
+    if (decision === "declined") {
+
+      const confirmed = confirm(
+        "Are you sure you want to decline this quotation?"
+      );
+
+      if (!confirmed) return;
+    }
+
+    if (decision === "accepted") {
+
+      const confirmed = confirm(
+        "You are accepting the quotation at the displayed total amount. Continue?"
+      );
+
+      if (!confirmed) return;
+    }
+
+    submitting = true;
+    setButtonsDisabled(true);
+
+    showNotice("Submitting your response...", "info");
+
+    try {
+
+      const { data, error } =
+        await supabaseClient.functions.invoke(
+          "quotation-response",
+          {
+            body: {
+              action: "respond",
+              token: customerToken,
+              decision: decision
+            }
+          }
+        );
+
+      if (error) {
+        throw new Error(
+          data?.error || error.message ||
+          "Unable to submit your response."
+        );
+      }
+
+      if (!data || !data.success) {
+        throw new Error(
+          data?.error || "Your response could not be recorded."
+        );
+      }
+
+      if (decision === "accepted") {
+
+        showResult(
+          "Quotation accepted.",
+          "Thank you for choosing R-BUY. Your acceptance has been securely recorded. Our team will contact you with the payment instructions.",
+          true
+        );
+
+      } else {
+
+        showResult(
+          "Quotation declined.",
+          "Your decision has been recorded. Our team will review your request and contact you regarding the next steps.",
+          false
+        );
+
+      }
+
+    } catch (error) {
+
+      console.error("QUOTATION RESPONSE ERROR:", error);
+
+      showNotice(
+        error.message || "Something went wrong. Please try again."
+      );
+
+      setButtonsDisabled(false);
+
+    } finally {
+
+      submitting = false;
+
+    }
+  }
+
+  // =========================================
+  // INITIALIZE
+  // =========================================
+
+  loadQuotation();
+</script>
+
+</body>
+</html>
