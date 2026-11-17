@@ -1,0 +1,920 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f3ed">
+<title>Choose Your Product | R-BUY</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --cream:#f5f3ed;
+  --paper:#fff;
+  --ink:#242424;
+  --muted:#77756f;
+  --blue:#3157d5;
+  --orange:#e58b52;
+  --line:#e8e5dc;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:Arial,sans-serif;
+}
+
+.panel {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:17px;
+  box-shadow:0 5px 20px rgba(25,25,25,.035);
+}
+
+.btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:13px 19px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn-primary {
+  background:var(--blue);
+  color:white;
+}
+
+.btn-primary:hover { background:#2445b5; }
+
+.btn-secondary {
+  background:#f0eee8;
+  color:#34332f;
+  border:1px solid #e2dfd6;
+}
+
+.btn:disabled {
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.field {
+  width:100%;
+  background:#faf9f6;
+  border:1px solid #dedbd2;
+  border-radius:10px;
+  padding:13px;
+  outline:none;
+  resize:vertical;
+}
+
+.field:focus {
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(49,87,213,.09);
+}
+
+.eyebrow {
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.accent-line {
+  width:38px;
+  height:3px;
+  background:var(--orange);
+  border-radius:5px;
+  margin-bottom:15px;
+}
+
+.product-card {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:15px;
+  overflow:hidden;
+  transition:.2s;
+}
+
+.product-card.selected {
+  border:2px solid var(--blue);
+  box-shadow:0 0 0 3px rgba(49,87,213,.09);
+}
+
+.product-image {
+  width:100%;
+  height:235px;
+  object-fit:cover;
+  background:#f0eee8;
+}
+
+.image-placeholder {
+  height:235px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f0eee8;
+  color:#999;
+  font-size:13px;
+}
+
+.status-pill {
+  display:inline-block;
+  padding:7px 11px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.spec-row {
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  padding:9px 0;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+}
+
+.spec-row:last-child { border-bottom:0; }
+
+#messageBox { white-space:pre-wrap; }
+
+@media(max-width:640px) {
+  .product-image,.image-placeholder { height:205px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="bg-white border-b" style="border-color:var(--line)">
+  <div class="max-w-6xl mx-auto px-5 py-5 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">
+        R<span style="color:var(--blue)">-</span>BUY
+      </h1>
+      <p class="text-xs mt-1" style="color:var(--muted)">
+        You can buy anything.
+      </p>
+    </div>
+
+    <span class="hidden sm:inline-block text-xs font-semibold px-4 py-2 rounded-full"
+      style="background:#e9edf9;color:var(--blue)">
+      Customer Product Selection
+    </span>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-5 py-8 md:py-12">
+
+  <!-- LOADING -->
+  <section id="loadingState" class="panel p-10 text-center">
+    <div class="mx-auto mb-5 w-10 h-10 border-4 rounded-full animate-spin"
+      style="border-color:#e8e5dc;border-top-color:var(--blue)">
+    </div>
+    <h2 class="font-bold text-lg">Loading your product shortlist</h2>
+    <p class="text-sm mt-2" style="color:var(--muted)">
+      Please wait while we retrieve your available options.
+    </p>
+  </section>
+
+  <!-- ERROR -->
+  <section id="errorState" class="hidden panel p-8 md:p-12 text-center">
+    <div class="text-4xl mb-4">!</div>
+    <h2 id="errorTitle" class="text-2xl font-bold">Unable to open your shortlist</h2>
+    <p id="errorMessage" class="text-sm mt-3 max-w-xl mx-auto leading-6"
+      style="color:var(--muted)">
+      We could not retrieve your product options.
+    </p>
+    <p class="text-xs mt-6" style="color:var(--muted)">
+      If you believe this is a mistake, contact R-BUY and provide your order reference.
+    </p>
+  </section>
+
+  <!-- CUSTOMER PAGE -->
+  <div id="pageContent" class="hidden">
+
+    <!-- INTRODUCTION -->
+    <section class="mb-8">
+      <p class="eyebrow mb-3">Your R-BUY order</p>
+      <h2 class="text-3xl md:text-4xl font-bold tracking-tight">
+        Your product shortlist
+      </h2>
+      <p class="mt-3 text-sm md:text-base max-w-2xl leading-6"
+        style="color:var(--muted)">
+        We've researched your request and prepared the product options below.
+        Review the details and choose the product that best suits your needs.
+      </p>
+    </section>
+
+    <!-- ORDER INFORMATION -->
+    <section class="panel p-5 md:p-6 mb-8">
+      <div class="flex flex-wrap justify-between items-start gap-4">
+        <div>
+          <p class="eyebrow">Order reference</p>
+          <h3 id="orderReference" class="text-xl font-bold mt-2">R-BUY</h3>
+        </div>
+
+        <span id="orderStatusBadge" class="status-pill"
+          style="background:#e9edf9;color:var(--blue)">
+          Product shortlist
+        </span>
+      </div>
+
+      <div class="border-t mt-5 pt-5 grid grid-cols-1 sm:grid-cols-3 gap-5"
+        style="border-color:var(--line)">
+
+        <div>
+          <p class="eyebrow">Customer</p>
+          <p id="customerName" class="font-semibold mt-2">Customer</p>
+        </div>
+
+        <div>
+          <p class="eyebrow">Requested product</p>
+          <p id="requestedProduct" class="font-semibold mt-2">Product</p>
+        </div>
+
+        <div>
+          <p class="eyebrow">Quantity requested</p>
+          <p id="requestedQuantity" class="font-semibold mt-2">1</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMER MESSAGE -->
+    <div id="messageBox" class="hidden mb-6 p-4 rounded-xl text-sm"></div>
+
+    <!-- SELECTION STATUS -->
+    <section id="selectionStatusPanel" class="hidden panel p-5 mb-8">
+      <div class="flex items-start gap-3">
+        <div class="text-2xl">✓</div>
+        <div>
+          <h3 id="selectionStatusTitle" class="font-bold">Selection received</h3>
+          <p id="selectionStatusMessage" class="text-sm mt-2 leading-6"
+            style="color:var(--muted)">
+            Your selection has been submitted.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT OPTIONS -->
+    <section>
+      <div class="flex flex-wrap justify-between items-end gap-3 mb-5">
+        <div>
+          <div class="accent-line"></div>
+          <h3 class="text-xl font-bold">Available product options</h3>
+          <p class="text-sm mt-2" style="color:var(--muted)">
+            Compare the products and select your preferred option.
+          </p>
+        </div>
+
+        <span id="optionCount" class="text-xs font-semibold px-3 py-2 rounded-lg"
+          style="background:#f0eee8;color:#77756f">
+          0 options
+        </span>
+      </div>
+
+      <div id="productOptionsList"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      </div>
+    </section>
+
+    <!-- CUSTOMER SUBMISSION -->
+    <section id="submissionSection" class="panel p-5 md:p-7 mt-9">
+
+      <div class="accent-line"></div>
+      <h3 class="text-xl font-bold">Submit your product choice</h3>
+      <p class="text-sm mt-2 leading-6" style="color:var(--muted)">
+        Select your preferred product above. You can also leave a note
+        if you have any special instructions or questions.
+      </p>
+
+      <div class="mt-6">
+        <p class="eyebrow mb-2">Your selected product</p>
+        <p id="selectedProductName" class="font-bold text-lg">
+          No product selected
+        </p>
+        <p id="selectedProductPrice" class="text-sm mt-1"
+          style="color:var(--blue)">
+        </p>
+      </div>
+
+      <div class="mt-6">
+        <label for="customerNote" class="eyebrow block mb-2">
+          Additional note (optional)
+        </label>
+        <textarea id="customerNote" class="field" rows="4"
+          maxlength="1000"
+          placeholder="Add any questions or special instructions here..."></textarea>
+        <p class="text-xs mt-2" style="color:var(--muted)">
+          Maximum 1,000 characters.
+        </p>
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <button id="submitSelectionBtn" class="btn btn-primary" disabled>
+          Submit My Selection
+        </button>
+        <span id="submissionHint" class="text-xs" style="color:var(--muted)">
+          Choose a product before submitting.
+        </span>
+      </div>
+
+      <p class="text-xs mt-5 leading-5" style="color:var(--muted)">
+        Your selection will be reviewed by the R-BUY team.
+        A quotation will be prepared after your choice is approved.
+        Submitting a selection does not initiate payment.
+      </p>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-10">
+      <p class="text-sm font-bold">R-BUY</p>
+      <p class="text-xs mt-2" style="color:var(--muted)">
+        You can buy anything.
+      </p>
+      <p class="text-xs mt-2" style="color:var(--muted)">
+        Your product sourcing partner.
+      </p>
+    </footer>
+
+  </div>
+</main>
+
+<script>
+// ==================================================
+// CONFIGURATION
+// ==================================================
+
+const SUPABASE_URL =
+  "https://ixuohpgqpuvjdbigmhje.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
+
+const PRODUCT_FUNCTION = "product-selection";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+// ==================================================
+// STATE
+// ==================================================
+
+const token = new URLSearchParams(window.location.search).get("token");
+
+let currentOrder = null;
+let productOptions = [];
+let selectedOption = null;
+let submissionInProgress = false;
+
+const $ = id => document.getElementById(id);
+
+// ==================================================
+// UTILITIES
+// ==================================================
+
+function formatKES(value, currency = "KES") {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) return "Price unavailable";
+
+  return currency + " " + amount.toLocaleString("en-KE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function safeImageUrl(value) {
+  try {
+    const url = new URL(value);
+
+    if (url.protocol === "https:" || url.protocol === "http:") {
+      return url.href;
+    }
+  } catch (error) {}
+
+  return null;
+}
+
+function showMessage(message, type = "info") {
+  const box = $("messageBox");
+
+  box.classList.remove("hidden");
+  box.className = "mb-6 p-4 rounded-xl text-sm";
+
+  if (type === "success") {
+    box.classList.add("bg-green-100", "text-green-800");
+  } else if (type === "error") {
+    box.classList.add("bg-red-100", "text-red-800");
+  } else {
+    box.classList.add("bg-blue-100", "text-blue-800");
+  }
+
+  box.textContent = message;
+}
+
+function showError(title, message) {
+  $("loadingState").classList.add("hidden");
+  $("pageContent").classList.add("hidden");
+  $("errorState").classList.remove("hidden");
+
+  $("errorTitle").textContent = title;
+  $("errorMessage").textContent = message;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[character]);
+}
+
+// ==================================================
+// EDGE FUNCTION REQUEST
+// ==================================================
+
+async function callProductFunction(payload) {
+  const { data, error } = await supabaseClient.functions.invoke(
+    PRODUCT_FUNCTION,
+    { body: payload }
+  );
+
+  if (error) {
+    console.error("Product selection function error:", error);
+
+    let detail = error.message || "Unable to complete the request.";
+
+    if (error.context) {
+      try {
+        const response = await error.context.json();
+
+        if (response.error) {
+          detail = response.error;
+        }
+      } catch (e) {}
+    }
+
+    throw new Error(detail);
+  }
+
+  if (!data || data.success === false) {
+    throw new Error(
+      data?.error || "The server did not confirm the request."
+    );
+  }
+
+  return data;
+}
+
+// ==================================================
+// LOAD CUSTOMER SHORTLIST
+// ==================================================
+
+async function loadSelection() {
+  if (!token) {
+    showError(
+      "Missing selection link",
+      "This link does not contain a valid customer access token. Please request a new link from R-BUY."
+    );
+    return;
+  }
+
+  try {
+    const result = await callProductFunction({
+      action: "get_selection",
+      token
+    });
+
+    if (!result.order || !Array.isArray(result.options)) {
+      throw new Error("The server returned an incomplete product shortlist.");
+    }
+
+    currentOrder = result.order;
+
+    productOptions = result.options.filter(option =>
+      option &&
+      option.is_published === true
+    );
+
+    renderOrderInformation();
+    renderProductOptions();
+    handleExistingSelection(result.latest_selection_status);
+
+    $("loadingState").classList.add("hidden");
+    $("pageContent").classList.remove("hidden");
+
+  } catch (error) {
+    console.error("Unable to load customer shortlist:", error);
+
+    const message = error.message || "Unable to retrieve your shortlist.";
+
+    showError(
+      "Unable to open your shortlist",
+      message + " Please contact R-BUY if you need assistance."
+    );
+  }
+}
+
+// ==================================================
+// ORDER INFORMATION
+// ==================================================
+
+function renderOrderInformation() {
+  $("orderReference").textContent =
+    currentOrder.reference
+      ? "RBUY-" + String(currentOrder.reference).substring(0, 8).toUpperCase()
+      : "R-BUY Order";
+
+  $("customerName").textContent =
+    currentOrder.customer_name || "Customer";
+
+  $("requestedProduct").textContent =
+    currentOrder.requested_product || "Product request";
+
+  $("requestedQuantity").textContent =
+    currentOrder.quantity ?? "Not specified";
+
+  $("orderStatusBadge").textContent =
+    "Product shortlist";
+}
+
+// ==================================================
+// PRODUCT OPTIONS
+// ==================================================
+
+function renderSpecifications(specifications) {
+  const container = document.createElement("div");
+  container.className = "mt-4";
+
+  if (
+    !specifications ||
+    typeof specifications !== "object" ||
+    Array.isArray(specifications) ||
+    !Object.keys(specifications).length
+  ) {
+    return container;
+  }
+
+  const heading = document.createElement("p");
+  heading.className = "eyebrow mb-2";
+  heading.textContent = "Specifications";
+
+  container.appendChild(heading);
+
+  Object.entries(specifications).forEach(([key, value]) => {
+    const row = document.createElement("div");
+    row.className = "spec-row";
+
+    const name = document.createElement("span");
+    name.style.color = "var(--muted)";
+    name.textContent = key;
+
+    const detail = document.createElement("span");
+    detail.className = "font-semibold text-right";
+    detail.textContent = String(value ?? "");
+
+    row.append(name, detail);
+    container.appendChild(row);
+  });
+
+  return container;
+}
+
+function createProductCard(option) {
+  const card = document.createElement("article");
+  card.className = "product-card";
+  card.dataset.optionId = option.id;
+
+  // PRODUCT IMAGE
+  const imageUrls = Array.isArray(option.image_urls)
+    ? option.image_urls.map(safeImageUrl).filter(Boolean).slice(0, 10)
+    : [];
+
+  if (imageUrls.length) {
+    const image = document.createElement("img");
+    image.src = imageUrls[0];
+    image.alt = option.product_name || "Product photograph";
+    image.className = "product-image";
+    image.loading = "lazy";
+    image.referrerPolicy = "no-referrer";
+
+    card.appendChild(image);
+
+    if (imageUrls.length > 1) {
+      const gallery = document.createElement("div");
+      gallery.className = "flex gap-2 px-4 pt-3 overflow-x-auto";
+
+      imageUrls.slice(1).forEach(url => {
+        const thumbnail = document.createElement("img");
+        thumbnail.src = url;
+        thumbnail.alt = "Additional product photograph";
+        thumbnail.className =
+          "w-16 h-16 object-cover rounded-lg border flex-shrink-0";
+        thumbnail.style.borderColor = "var(--line)";
+        thumbnail.loading = "lazy";
+        thumbnail.referrerPolicy = "no-referrer";
+
+        thumbnail.addEventListener("click", () => {
+          image.src = url;
+        });
+
+        gallery.appendChild(thumbnail);
+      });
+
+      card.appendChild(gallery);
+    }
+  } else {
+    const placeholder = document.createElement("div");
+    placeholder.className = "image-placeholder";
+    placeholder.textContent = "Product photograph unavailable";
+    card.appendChild(placeholder);
+  }
+
+  // PRODUCT DETAILS
+  const content = document.createElement("div");
+  content.className = "p-5";
+
+  const title = document.createElement("h3");
+  title.className = "text-lg font-bold";
+  title.textContent = option.product_name || "Unnamed product";
+
+  const brand = document.createElement("p");
+  brand.className = "text-xs mt-2";
+  brand.style.color = "var(--muted)";
+  brand.textContent = [option.brand, option.model]
+    .filter(Boolean)
+    .join(" · ") || "Brand or model not specified";
+
+  const price = document.createElement("p");
+  price.className = "text-2xl font-bold mt-4";
+  price.style.color = "var(--blue)";
+  price.textContent = formatKES(option.price, option.currency || "KES");
+
+  const description = document.createElement("p");
+  description.className = "text-sm mt-4 leading-6 whitespace-pre-wrap";
+  description.textContent =
+    option.description || "No additional description provided.";
+
+  const specifications = renderSpecifications(option.specifications);
+
+  const availability = document.createElement("div");
+  availability.className = "mt-4 p-3 rounded-lg text-xs leading-5";
+  availability.style.background = "#faf9f6";
+  availability.style.color = "var(--muted)";
+  availability.textContent = option.availability_notes
+    ? "Availability: " + option.availability_notes
+    : "Contact R-BUY if you need more information about availability.";
+
+  const selectButton = document.createElement("button");
+  selectButton.className = "btn btn-secondary w-full mt-5";
+  selectButton.textContent = "Select This Product";
+
+  selectButton.addEventListener("click", () => {
+    selectProduct(option);
+  });
+
+  content.append(
+    title,
+    brand,
+    price,
+    description,
+    specifications,
+    availability,
+    selectButton
+  );
+
+  card.appendChild(content);
+
+  return card;
+}
+
+function renderProductOptions() {
+  const container = $("productOptionsList");
+  container.innerHTML = "";
+
+  $("optionCount").textContent =
+    productOptions.length +
+    (productOptions.length === 1 ? " option" : " options");
+
+  if (!productOptions.length) {
+    const empty = document.createElement("div");
+    empty.className = "panel p-8 text-center text-sm";
+    empty.style.color = "var(--muted)";
+    empty.textContent =
+      "There are currently no published product options available.";
+
+    container.appendChild(empty);
+
+    $("submissionSection").classList.add("hidden");
+    return;
+  }
+
+  productOptions.forEach(option => {
+    container.appendChild(createProductCard(option));
+  });
+}
+
+// ==================================================
+// SELECT A PRODUCT
+// ==================================================
+
+function selectProduct(option) {
+  selectedOption = option;
+
+  document.querySelectorAll(".product-card").forEach(card => {
+    const selected = card.dataset.optionId === option.id;
+
+    card.classList.toggle("selected", selected);
+
+    const button = card.querySelector("button");
+
+    if (button) {
+      button.textContent = selected
+        ? "Selected"
+        : "Select This Product";
+
+      button.className = selected
+        ? "btn btn-primary w-full mt-5"
+        : "btn btn-secondary w-full mt-5";
+    }
+  });
+
+  $("selectedProductName").textContent = option.product_name;
+
+  $("selectedProductPrice").textContent =
+    formatKES(option.price, option.currency || "KES");
+
+  $("submitSelectionBtn").disabled = false;
+
+  $("submissionHint").textContent =
+    "Your preferred product is selected.";
+
+  $("submissionSection").scrollIntoView({
+    behavior: "smooth",
+    block: "nearest"
+  });
+}
+
+// ==================================================
+// EXISTING SELECTION STATUS
+// ==================================================
+
+function handleExistingSelection(status) {
+  const panel = $("selectionStatusPanel");
+
+  if (status === "pending_review") {
+    panel.classList.remove("hidden");
+
+    $("selectionStatusTitle").textContent =
+      "Your selection has been received";
+
+    $("selectionStatusMessage").textContent =
+      "Thank you. Your choice is awaiting review by the R-BUY team. You do not need to submit it again.";
+
+    $("submissionSection").classList.add("hidden");
+
+    return;
+  }
+
+  if (status === "approved") {
+    panel.classList.remove("hidden");
+
+    $("selectionStatusTitle").textContent =
+      "Your product selection has been approved";
+
+    $("selectionStatusMessage").textContent =
+      "The R-BUY team has approved your choice. Your quotation will be handled separately.";
+
+    $("submissionSection").classList.add("hidden");
+
+    return;
+  }
+
+  if (status === "rejected") {
+    panel.classList.remove("hidden");
+
+    $("selectionStatusTitle").textContent =
+      "Please choose another product";
+
+    $("selectionStatusMessage").textContent =
+      "Your previous selection was not approved. You can review the available options and submit another choice.";
+
+    $("submissionSection").classList.remove("hidden");
+
+    return;
+  }
+
+  panel.classList.add("hidden");
+  $("submissionSection").classList.remove("hidden");
+}
+
+// ==================================================
+// SUBMIT CUSTOMER SELECTION
+// ==================================================
+
+$("submitSelectionBtn").addEventListener("click", async () => {
+  if (submissionInProgress) return;
+
+  if (!selectedOption) {
+    showMessage("Please select a product first.", "error");
+    return;
+  }
+
+  const note = $("customerNote").value.trim();
+
+  if (note.length > 1000) {
+    showMessage("Your note cannot exceed 1,000 characters.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Submit your selection of \"" +
+    selectedOption.product_name +
+    "\"?\n\nThe R-BUY team will review your choice before preparing a quotation."
+  );
+
+  if (!confirmed) return;
+
+  submissionInProgress = true;
+
+  const button = $("submitSelectionBtn");
+  button.disabled = true;
+  button.textContent = "Submitting selection...";
+
+  try {
+    const result = await callProductFunction({
+      action: "submit_selection",
+      token,
+      option_id: selectedOption.id,
+      customer_note: note
+    });
+
+    if (!result.success) {
+      throw new Error("Your selection was not confirmed by the server.");
+    }
+
+    $("submissionSection").classList.add("hidden");
+
+    $("selectionStatusPanel").classList.remove("hidden");
+
+    $("selectionStatusTitle").textContent =
+      "Your selection has been submitted";
+
+    $("selectionStatusMessage").textContent =
+      "Thank you for choosing your preferred product. Your selection has been sent to the R-BUY team for review. You will be contacted with the next steps.";
+
+    $("orderStatusBadge").textContent =
+      "Awaiting review";
+
+    $("orderStatusBadge").style.background = "#fff4df";
+    $("orderStatusBadge").style.color = "#8a5a00";
+
+    $("selectionStatusPanel").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+  } catch (error) {
+    console.error("Selection submission error:", error);
+
+    showMessage(
+      error.message || "Unable to submit your selection. Please try again.",
+      "error"
+    );
+
+    button.disabled = false;
+    button.textContent = "Submit My Selection";
+
+  } finally {
+    submissionInProgress = false;
+  }
+});
+
+// ==================================================
+// INITIALIZE
+// ==================================================
+
+loadSelection();
+
+</script>
+</body>
+</html>
