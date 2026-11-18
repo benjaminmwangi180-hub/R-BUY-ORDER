@@ -1085,10 +1085,10 @@
 
 <!-- JAVASCRIPT -->
 
-<script>
 
+<script>
 // =========================================
-// SUPABASE CONFIGURATION
+// R-BUY ORDERTRACK CONFIGURATION
 // =========================================
 const SUPABASE_URL =
   "https://ixuohpgqpuvjdbigmhje.supabase.co";
@@ -1096,17 +1096,11 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
 
-// Guard against a failed Supabase CDN request.
-const supabaseClient =
-  window.supabase && typeof window.supabase.createClient === "function"
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-    : null;
+const CREATE_ORDER_URL =
+  SUPABASE_URL + "/functions/v1/ordertrack-create";
 
-if (!supabaseClient) {
-  console.error(
-    "R-BUY: Supabase client did not load. Check the CDN and network connection."
-  );
-}
+const TRACKING_PAGE_URL =
+  "https://benjaminmwangi180-hub.github.io/R-BUY-OrderTrack/tracking.html";
 
 // =========================================
 // ELEMENTS
@@ -1114,15 +1108,25 @@ if (!supabaseClient) {
 const orderForm = document.getElementById("orderForm");
 const submitButton = document.getElementById("submitButton");
 const submitText = document.getElementById("submitText");
+
 const successMessage = document.getElementById("successMessage");
 const orderReferenceElement = document.getElementById("orderReference");
+
 const productNameInput = document.getElementById("product_name");
 const categoryInput = document.getElementById("category");
 const categoryError = document.getElementById("categoryError");
 const categoryStatus = document.getElementById("categoryStatus");
+
 const categoryCards = document.querySelectorAll(".category-option");
-const catalogueSelection = document.getElementById("catalogueSelection");
-const catalogueSummary = document.getElementById("catalogueSummary");
+
+const catalogueSelection =
+  document.getElementById("catalogueSelection");
+
+const catalogueSummary =
+  document.getElementById("catalogueSummary");
+
+let generatedTrackingUrl = "";
+let generatedOrderReference = "";
 
 // =========================================
 // URL PREFILL
@@ -1166,7 +1170,7 @@ if (locationPrefill) {
   document.getElementById("delivery_location").value = locationPrefill;
 }
 
-// Show catalogue selection summary.
+// Catalogue summary.
 const catalogueDetails = [
   categoryPrefill,
   subcategoryPrefill,
@@ -1209,7 +1213,6 @@ if (catalogueDetails.length > 0 || productPrefill) {
 
 // =========================================
 // PROGRESS INDICATOR
-// IMPORTANT: This must come BEFORE category selection.
 // =========================================
 const progressFill = document.getElementById("progressFill");
 const progressText = document.getElementById("progressText");
@@ -1248,12 +1251,6 @@ orderForm.querySelectorAll("input, textarea, select").forEach(field => {
   field.addEventListener("input", updateProgress);
   field.addEventListener("change", updateProgress);
 });
-
-categoryCards.forEach(card => {
-  card.addEventListener("click", updateProgress);
-});
-
-updateProgress();
 
 // =========================================
 // CATEGORY SELECTION
@@ -1298,7 +1295,7 @@ categoryCards.forEach(card => {
   });
 });
 
-// Automatically select category from landing page.
+// Catalogue category prefill.
 if (categoryPrefill) {
   const selected = selectCategory(categoryPrefill);
 
@@ -1310,19 +1307,102 @@ if (categoryPrefill) {
   }
 }
 
+updateProgress();
+
+// =========================================
+// TRACKING LINK DISPLAY
+// =========================================
+function displayTrackingDetails(trackingUrl) {
+  const existingPanel =
+    document.getElementById("trackingDetails");
+
+  if (existingPanel) {
+    existingPanel.remove();
+  }
+
+  const panel = document.createElement("div");
+
+  panel.id = "trackingDetails";
+
+  panel.className =
+    "mx-auto mt-6 max-w-md rounded-2xl border border-blue-200 bg-blue-50 p-6 text-left";
+
+  const heading = document.createElement("p");
+  heading.className =
+    "mono text-[9px] tracking-widest text-blue-600";
+  heading.textContent = "YOUR PRIVATE ORDER TRACKING LINK";
+
+  const explanation = document.createElement("p");
+  explanation.className =
+    "mt-2 text-xs leading-6 text-zinc-600";
+  explanation.textContent =
+    "Use this unique link to follow your order's progress, from sourcing to delivery. Keep it private.";
+
+  const linkDisplay = document.createElement("p");
+  linkDisplay.className =
+    "mt-3 break-all rounded-lg border border-blue-100 bg-white p-3 text-xs text-blue-600";
+  linkDisplay.textContent = trackingUrl;
+
+  const buttonContainer = document.createElement("div");
+  buttonContainer.className =
+    "mt-4 grid grid-cols-2 gap-3";
+
+  const openButton = document.createElement("a");
+  openButton.href = trackingUrl;
+  openButton.target = "_blank";
+  openButton.rel = "noopener noreferrer";
+  openButton.className =
+    "rounded-lg bg-blue-500 px-3 py-3 text-center text-xs font-bold text-white hover:bg-blue-600";
+  openButton.textContent = "Track My Order ↗";
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className =
+    "rounded-lg border border-blue-200 bg-white px-3 py-3 text-xs font-bold text-blue-600 hover:bg-blue-100";
+  copyButton.textContent = "Copy Tracking Link";
+
+  copyButton.addEventListener("click", async function() {
+    try {
+      await navigator.clipboard.writeText(trackingUrl);
+      copyButton.textContent = "Copied!";
+    } catch (error) {
+      window.prompt("Copy your tracking link:", trackingUrl);
+    }
+  });
+
+  buttonContainer.appendChild(openButton);
+  buttonContainer.appendChild(copyButton);
+
+  panel.appendChild(heading);
+  panel.appendChild(explanation);
+  panel.appendChild(linkDisplay);
+  panel.appendChild(buttonContainer);
+
+  const referenceContainer =
+    orderReferenceElement.parentElement;
+
+  referenceContainer.insertAdjacentElement("afterend", panel);
+}
+
 // =========================================
 // ORDER SUBMISSION
 // =========================================
 orderForm.addEventListener("submit", async function(event) {
   event.preventDefault();
 
-  // Validate category before native browser validation.
+  if (submitButton.disabled) {
+    return;
+  }
+
+  // CATEGORY VALIDATION
   const category = categoryInput.value.trim();
 
   if (!category) {
     categoryError.classList.remove("hidden");
 
-    categoryStatus.textContent = "Please choose a product category.";
+    categoryStatus.textContent =
+      "Please choose a product category.";
+
     categoryStatus.classList.remove("text-blue-500");
     categoryStatus.classList.add("text-red-500");
 
@@ -1334,20 +1414,13 @@ orderForm.addEventListener("submit", async function(event) {
     return;
   }
 
+  // BROWSER VALIDATION
   if (!orderForm.checkValidity()) {
     orderForm.reportValidity();
     return;
   }
 
-  if (!supabaseClient) {
-    alert(
-      "The order service is temporarily unavailable because the database connection did not load. Please refresh the page and try again."
-    );
-
-    console.error("R-BUY submission stopped: Supabase client is unavailable.");
-    return;
-  }
-
+  // CUSTOMER INFORMATION
   const customerName =
     document.getElementById("customer_name").value.trim();
 
@@ -1357,6 +1430,7 @@ orderForm.addEventListener("submit", async function(event) {
   const email =
     document.getElementById("email").value.trim();
 
+  // PRODUCT INFORMATION
   const productName =
     productNameInput.value.trim();
 
@@ -1378,19 +1452,21 @@ orderForm.addEventListener("submit", async function(event) {
   const quantity =
     Number(document.getElementById("quantity").value);
 
+  const referenceUrl =
+    document.getElementById("reference_url").value.trim();
+
+  // BUDGET
   const budget =
     Number(document.getElementById("budget").value);
 
   const budgetType =
     document.getElementById("budget_type").value;
 
-  const referenceUrl =
-    document.getElementById("reference_url").value.trim();
-
+  // DELIVERY
   const deliveryLocation =
     document.getElementById("delivery_location").value.trim();
 
-  // OTHER VALIDATION
+  // EXTRA VALIDATION
   if (customerName.length < 2) {
     alert("Please enter your full name.");
     return;
@@ -1406,7 +1482,7 @@ orderForm.addEventListener("submit", async function(event) {
     return;
   }
 
-  // Combine catalogue details with description.
+  // BUILD PRODUCT DESCRIPTION
   const catalogueDescription = [];
 
   if (subcategory) {
@@ -1434,51 +1510,75 @@ orderForm.addEventListener("submit", async function(event) {
       ? catalogueDescription.join("\n\n")
       : "No additional specifications provided.";
 
-  // UUID AND REFERENCE
-  const orderId =
-    (window.crypto && typeof window.crypto.randomUUID === "function")
-      ? window.crypto.randomUUID()
-      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(character) {
-          const random = Math.random() * 16 | 0;
-          const value = character === "x" ? random : (random & 0x3 | 0x8);
-          return value.toString(16);
-        });
+  // =========================================
+  // EDGE FUNCTION REQUEST
+  // =========================================
 
-  const orderReference =
-    "RBUY-" + orderId.substring(0, 8).toUpperCase();
-
-  // DATABASE PAYLOAD
   const orderData = {
-    id: orderId,
     customer_name: customerName,
+    whatsapp: whatsapp,
     email: email || null,
+
     category: category,
     product_name: productName,
     product_description: finalProductDescription,
+
     quantity: quantity,
+
     budget: budget,
     budget_type: budgetType,
+
     reference_url: referenceUrl || null,
-    whatsapp: whatsapp,
-    delivery_location: deliveryLocation,
-    status: "pending_review",
-    payment_status: "unpaid"
+    delivery_location: deliveryLocation
   };
 
   submitButton.disabled = true;
-  submitText.textContent = "Submitting your request...";
+  submitText.textContent = "Creating your order...";
 
   try {
-    const { error } = await supabaseClient
-      .from("orders")
-      .insert([orderData]);
+    const response = await fetch(CREATE_ORDER_URL, {
+      method: "POST",
 
-    if (error) {
-      throw error;
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY
+      },
+
+      body: JSON.stringify(orderData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.error ||
+        result.message ||
+        "The order service could not process your request."
+      );
     }
 
+    // =========================================
+    // VERIFY FUNCTION RESPONSE
+    // =========================================
+
+    if (!result.order_reference || !result.tracking_url) {
+      throw new Error(
+        "The order was processed, but the tracking details were missing from the server response. Contact R-BUY before submitting again."
+      );
+    }
+
+    generatedOrderReference = result.order_reference;
+    generatedTrackingUrl = result.tracking_url;
+
+    // =========================================
     // SHOW SUCCESS
-    orderReferenceElement.textContent = orderReference;
+    // =========================================
+
+    orderReferenceElement.textContent =
+      generatedOrderReference;
+
+    displayTrackingDetails(generatedTrackingUrl);
 
     orderForm.classList.add("hidden");
 
@@ -1493,22 +1593,12 @@ orderForm.addEventListener("submit", async function(event) {
     });
 
   } catch (error) {
-    console.error("R-BUY order submission failed:", {
-      message: error && error.message ? error.message : String(error),
-      details: error && error.details ? error.details : null,
-      hint: error && error.hint ? error.hint : null,
-      code: error && error.code ? error.code : null,
-      status: error && error.status ? error.status : null
-    });
-
-    const errorMessage = error && error.message
-      ? error.message
-      : "An unknown database error occurred.";
+    console.error("R-BUY OrderTrack submission error:", error);
 
     alert(
-      "We could not submit your order.\n\n" +
-      errorMessage +
-      "\n\nPlease try again. If the problem continues, contact R-BUY."
+      "We could not confirm your order submission.\n\n" +
+      error.message +
+      "\n\nPlease contact R-BUY before submitting another request."
     );
 
     submitButton.disabled = false;
@@ -1527,7 +1617,7 @@ document.getElementById("copyReference")
     await navigator.clipboard.writeText(reference);
     this.textContent = "Copied!";
   } catch {
-    alert("Your order reference is: " + reference);
+    window.prompt("Copy your order reference:", reference);
   }
 });
 
@@ -1538,6 +1628,7 @@ document.getElementById("year").textContent =
   new Date().getFullYear();
 
 </script>
+
 
 </body>
 </html>
