@@ -1011,8 +1011,64 @@
 
       </div>
 
+      <div class="mx-auto mt-5 max-w-sm rounded-2xl border border-zinc-200 bg-white p-6 text-left">
+        <p class="mono text-[9px] tracking-widest text-zinc-400">
+          ORDER SUMMARY
+        </p>
+
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-zinc-400">Product</span>
+            <strong id="summaryProduct" class="max-w-[65%] text-right text-zinc-800"></strong>
+          </div>
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-zinc-400">Category</span>
+            <strong id="summaryCategory" class="max-w-[65%] text-right text-zinc-800"></strong>
+          </div>
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-zinc-400">Quantity</span>
+            <strong id="summaryQuantity" class="text-right text-zinc-800"></strong>
+          </div>
+          <div class="border-t border-zinc-100 pt-3">
+            <p class="text-xs text-zinc-400">Delivery location</p>
+            <p id="summaryLocation" class="mt-1 break-words text-sm font-semibold leading-6 text-zinc-800"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mx-auto mt-5 max-w-sm rounded-2xl border border-blue-100 bg-blue-50 p-6 text-left">
+        <p class="mono text-[9px] tracking-widest text-blue-600">
+          YOUR PRIVATE ORDER TRACKING LINK
+        </p>
+
+        <p class="mt-2 text-xs leading-6 text-zinc-600">
+          Use this link to check your order's progress as we source, purchase and deliver your item.
+          Keep it private because anyone with the link can view your customer-facing order updates.
+        </p>
+
+        <a
+          id="trackingLink"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-4 block break-all text-sm font-semibold text-blue-600 underline underline-offset-4">
+          Open your tracking page ↗
+        </a>
+
+        <button
+          type="button"
+          id="copyTrackingLink"
+          class="mt-4 rounded-lg bg-blue-500 px-4 py-3 text-xs font-bold text-white hover:bg-blue-600">
+          Copy tracking link
+        </button>
+
+        <p id="trackingCopyStatus" class="mt-2 hidden text-[11px] text-green-600" aria-live="polite">
+          Tracking link copied.
+        </p>
+      </div>
+
       <p class="mt-7 text-sm leading-7 text-zinc-500">
-        Keep your reference number for future communication.
+        Save both your order reference and private tracking link for future use.
       </p>
 
       <p class="handwritten mt-5 text-2xl text-orange-500">
@@ -1098,11 +1154,8 @@
   const SUPABASE_KEY =
     "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+  const ORDER_CREATE_FUNCTION =
+    SUPABASE_URL + "/functions/v1/ordertrack-create";
 
 
   // =========================================
@@ -1123,6 +1176,22 @@
 
   const orderReferenceElement =
     document.getElementById("orderReference");
+
+  const trackingLinkElement =
+    document.getElementById("trackingLink");
+
+  const copyTrackingLinkButton =
+    document.getElementById("copyTrackingLink");
+
+  const trackingCopyStatus =
+    document.getElementById("trackingCopyStatus");
+
+  const summaryProduct = document.getElementById("summaryProduct");
+  const summaryCategory = document.getElementById("summaryCategory");
+  const summaryQuantity = document.getElementById("summaryQuantity");
+  const summaryLocation = document.getElementById("summaryLocation");
+
+  let customerTrackingUrl = "";
 
   const productNameInput =
     document.getElementById("product_name");
@@ -1494,20 +1563,11 @@
         : "No additional specifications provided.";
 
 
-    // UUID AND REFERENCE
-
-    const orderId = crypto.randomUUID();
-
-    const orderReference =
-      "RBUY-" + orderId.substring(0, 8).toUpperCase();
-
-
-    // DATABASE PAYLOAD
-    // Existing field names are preserved.
+    // ORDER DATA
+    // The Edge Function creates the order and its private tracking link
+    // together, so the browser never inserts directly into the orders table.
 
     const orderData = {
-
-      id: orderId,
 
       customer_name: customerName,
 
@@ -1529,11 +1589,7 @@
 
       whatsapp: whatsapp,
 
-      delivery_location: deliveryLocation,
-
-      status: "pending_review",
-
-      payment_status: "unpaid"
+      delivery_location: deliveryLocation
 
     };
 
@@ -1545,19 +1601,66 @@
 
     try {
 
-      const { error } = await supabaseClient
-        .from("orders")
-        .insert([orderData]);
+      const response = await fetch(ORDER_CREATE_FUNCTION, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        },
+        body: JSON.stringify(orderData)
+      });
 
-      if (error) {
-        throw error;
+      let result = {};
+
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("The server returned an unreadable response. Please try again.");
       }
 
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.error ||
+          result.message ||
+          "Order submission failed. Please try again."
+        );
+      }
+
+      if (
+        typeof result.order_reference !== "string" ||
+        typeof result.tracking_url !== "string"
+      ) {
+        throw new Error("The order was created, but the tracking details were missing. Please contact R-BUY before submitting again.");
+      }
+
+      // Accept only the expected R-BUY tracking page URL with a token.
+      const returnedTrackingUrl = new URL(result.tracking_url);
+      const expectedTrackingPath = "/R-BUY-OrderTrack/tracking.html";
+
+      if (
+        returnedTrackingUrl.origin !== "https://benjaminmwangi180-hub.github.io" ||
+        returnedTrackingUrl.pathname !== expectedTrackingPath ||
+        !returnedTrackingUrl.searchParams.get("token")
+      ) {
+        throw new Error("The server returned an invalid tracking link. Please contact R-BUY.");
+      }
+
+      customerTrackingUrl = returnedTrackingUrl.href;
 
       // SHOW SUCCESS
 
       orderReferenceElement.textContent =
-        orderReference;
+        result.order_reference;
+
+      // Show the exact details submitted by this customer.
+      summaryProduct.textContent = productName;
+      summaryCategory.textContent = category;
+      summaryQuantity.textContent = String(quantity);
+      summaryLocation.textContent = deliveryLocation;
+
+      trackingLinkElement.href =
+        customerTrackingUrl;
 
       orderForm.classList.add("hidden");
 
@@ -1615,6 +1718,30 @@
       }
 
     });
+
+
+  // =========================================
+  // COPY PRIVATE TRACKING LINK
+  // =========================================
+
+  copyTrackingLinkButton.addEventListener("click", async function() {
+
+    if (!customerTrackingUrl) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(customerTrackingUrl);
+      trackingCopyStatus.textContent = "Tracking link copied.";
+      trackingCopyStatus.classList.remove("hidden");
+      this.textContent = "Copied!";
+    } catch {
+      trackingCopyStatus.textContent =
+        "Copy unavailable. Open the tracking page and copy its address.";
+      trackingCopyStatus.classList.remove("hidden");
+    }
+
+  });
 
 
   // =========================================
