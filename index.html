@@ -1087,541 +1087,455 @@
 
 <script>
 
-  // =========================================
-  // SUPABASE CONFIGURATION
-  // =========================================
+// =========================================
+// SUPABASE CONFIGURATION
+// =========================================
+const SUPABASE_URL =
+  "https://ixuohpgqpuvjdbigmhje.supabase.co";
 
-  const SUPABASE_URL =
-    "https://ixuohpgqpuvjdbigmhje.supabase.co";
+const SUPABASE_KEY =
+  "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
 
-  const SUPABASE_KEY =
-    "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
+// Guard against a failed Supabase CDN request.
+const supabaseClient =
+  window.supabase && typeof window.supabase.createClient === "function"
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+if (!supabaseClient) {
+  console.error(
+    "R-BUY: Supabase client did not load. Check the CDN and network connection."
+  );
+}
 
+// =========================================
+// ELEMENTS
+// =========================================
+const orderForm = document.getElementById("orderForm");
+const submitButton = document.getElementById("submitButton");
+const submitText = document.getElementById("submitText");
+const successMessage = document.getElementById("successMessage");
+const orderReferenceElement = document.getElementById("orderReference");
+const productNameInput = document.getElementById("product_name");
+const categoryInput = document.getElementById("category");
+const categoryError = document.getElementById("categoryError");
+const categoryStatus = document.getElementById("categoryStatus");
+const categoryCards = document.querySelectorAll(".category-option");
+const catalogueSelection = document.getElementById("catalogueSelection");
+const catalogueSummary = document.getElementById("catalogueSummary");
 
-  // =========================================
-  // ELEMENTS
-  // =========================================
+// =========================================
+// URL PREFILL
+// =========================================
+const urlParams = new URLSearchParams(window.location.search);
 
-  const orderForm =
-    document.getElementById("orderForm");
+function getParam(name) {
+  return (urlParams.get(name) || "").trim();
+}
 
-  const submitButton =
-    document.getElementById("submitButton");
+const productPrefill = getParam("product");
+const categoryPrefill = getParam("category");
+const subcategoryPrefill = getParam("subcategory");
+const typePrefill = getParam("type");
+const brandPrefill = getParam("brand");
+const modelPrefill = getParam("model");
+const locationPrefill = getParam("delivery_location");
 
-  const submitText =
-    document.getElementById("submitText");
+// Fill editable fields.
+if (productPrefill) {
+  productNameInput.value = productPrefill;
+}
 
-  const successMessage =
-    document.getElementById("successMessage");
+if (subcategoryPrefill) {
+  document.getElementById("subcategory").value = subcategoryPrefill;
+}
 
-  const orderReferenceElement =
-    document.getElementById("orderReference");
+if (typePrefill) {
+  document.getElementById("product_type").value = typePrefill;
+}
 
-  const productNameInput =
-    document.getElementById("product_name");
+if (brandPrefill) {
+  document.getElementById("brand").value = brandPrefill;
+}
 
-  const categoryInput =
-    document.getElementById("category");
+if (modelPrefill) {
+  document.getElementById("model").value = modelPrefill;
+}
 
-  const categoryError =
-    document.getElementById("categoryError");
+if (locationPrefill) {
+  document.getElementById("delivery_location").value = locationPrefill;
+}
 
-  const categoryStatus =
-    document.getElementById("categoryStatus");
+// Show catalogue selection summary.
+const catalogueDetails = [
+  categoryPrefill,
+  subcategoryPrefill,
+  typePrefill,
+  brandPrefill,
+  modelPrefill
+].filter(Boolean);
 
-  const categoryCards =
-    document.querySelectorAll(".category-option");
+if (catalogueDetails.length > 0 || productPrefill) {
+  catalogueSelection.classList.remove("hidden");
 
-  const catalogueSelection =
-    document.getElementById("catalogueSelection");
+  const summaryParts = [];
 
-  const catalogueSummary =
-    document.getElementById("catalogueSummary");
-
-
-  // =========================================
-  // URL PREFILL
-  // Supports landing-page catalogue parameters:
-  // product, category, subcategory, type,
-  // brand, model, delivery_location
-  // =========================================
-
-  const urlParams =
-    new URLSearchParams(window.location.search);
-
-  function getParam(name) {
-    return (urlParams.get(name) || "").trim();
-  }
-
-  const productPrefill = getParam("product");
-  const categoryPrefill = getParam("category");
-  const subcategoryPrefill = getParam("subcategory");
-  const typePrefill = getParam("type");
-  const brandPrefill = getParam("brand");
-  const modelPrefill = getParam("model");
-  const locationPrefill = getParam("delivery_location");
-
-
-  // Fill editable fields
-
-  if (productPrefill) {
-    productNameInput.value = productPrefill;
+  if (categoryPrefill) {
+    summaryParts.push("Category: " + categoryPrefill);
   }
 
   if (subcategoryPrefill) {
-    document.getElementById("subcategory").value =
-      subcategoryPrefill;
+    summaryParts.push("Subcategory: " + subcategoryPrefill);
   }
 
   if (typePrefill) {
-    document.getElementById("product_type").value =
-      typePrefill;
+    summaryParts.push("Type: " + typePrefill);
+  }
+
+  if (productPrefill) {
+    summaryParts.push("Product: " + productPrefill);
   }
 
   if (brandPrefill) {
-    document.getElementById("brand").value =
-      brandPrefill;
+    summaryParts.push("Brand: " + brandPrefill);
   }
 
   if (modelPrefill) {
-    document.getElementById("model").value =
-      modelPrefill;
+    summaryParts.push("Model: " + modelPrefill);
   }
 
-  if (locationPrefill) {
-    document.getElementById("delivery_location").value =
-      locationPrefill;
+  catalogueSummary.textContent = summaryParts.join("  •  ");
+}
+
+// =========================================
+// PROGRESS INDICATOR
+// IMPORTANT: This must come BEFORE category selection.
+// =========================================
+const progressFill = document.getElementById("progressFill");
+const progressText = document.getElementById("progressText");
+
+const trackedFields = [
+  "customer_name",
+  "whatsapp",
+  "category",
+  "product_name",
+  "quantity",
+  "budget",
+  "delivery_location"
+];
+
+function updateProgress() {
+  let completed = 0;
+
+  trackedFields.forEach(id => {
+    const field = document.getElementById(id);
+
+    if (field && String(field.value).trim() !== "") {
+      completed++;
+    }
+  });
+
+  const percentage =
+    Math.round((completed / trackedFields.length) * 100);
+
+  progressFill.style.width = percentage + "%";
+
+  progressText.textContent =
+    percentage + "% of the main details completed";
+}
+
+orderForm.querySelectorAll("input, textarea, select").forEach(field => {
+  field.addEventListener("input", updateProgress);
+  field.addEventListener("change", updateProgress);
+});
+
+categoryCards.forEach(card => {
+  card.addEventListener("click", updateProgress);
+});
+
+updateProgress();
+
+// =========================================
+// CATEGORY SELECTION
+// =========================================
+function selectCategory(category) {
+  const matchingCard = Array.from(categoryCards).find(card => {
+    return card.dataset.category.toLowerCase() === category.toLowerCase();
+  });
+
+  if (!matchingCard) {
+    return false;
   }
 
-
-  // Show catalogue selection summary
-
-  const catalogueDetails = [
-    categoryPrefill,
-    subcategoryPrefill,
-    typePrefill,
-    brandPrefill,
-    modelPrefill
-  ].filter(Boolean);
-
-  if (catalogueDetails.length > 0 || productPrefill) {
-
-    catalogueSelection.classList.remove("hidden");
-
-    const summaryParts = [];
-
-    if (categoryPrefill) {
-      summaryParts.push("Category: " + categoryPrefill);
-    }
-
-    if (subcategoryPrefill) {
-      summaryParts.push("Subcategory: " + subcategoryPrefill);
-    }
-
-    if (typePrefill) {
-      summaryParts.push("Type: " + typePrefill);
-    }
-
-    if (productPrefill) {
-      summaryParts.push("Product: " + productPrefill);
-    }
-
-    if (brandPrefill) {
-      summaryParts.push("Brand: " + brandPrefill);
-    }
-
-    if (modelPrefill) {
-      summaryParts.push("Model: " + modelPrefill);
-    }
-
-    catalogueSummary.textContent =
-      summaryParts.join("  •  ");
-
-  }
-
-
-  // =========================================
-  // CATEGORY SELECTION
-  // =========================================
-
-  function selectCategory(category) {
-
-    const matchingCard = Array.from(categoryCards).find(card => {
-      return card.dataset.category.toLowerCase() === category.toLowerCase();
-    });
-
-    if (!matchingCard) {
-      return false;
-    }
-
-    categoryInput.value = matchingCard.dataset.category;
-
-    categoryCards.forEach(card => {
-      card.classList.remove("selected");
-      card.setAttribute("aria-pressed", "false");
-    });
-
-    matchingCard.classList.add("selected");
-    matchingCard.setAttribute("aria-pressed", "true");
-
-    categoryError.classList.add("hidden");
-
-    categoryStatus.textContent =
-      "Selected category: " + matchingCard.dataset.category;
-
-    categoryStatus.classList.remove("text-red-500");
-    categoryStatus.classList.add("text-blue-500");
-
-    updateProgress();
-
-    return true;
-  }
-
+  categoryInput.value = matchingCard.dataset.category;
 
   categoryCards.forEach(card => {
-
+    card.classList.remove("selected");
     card.setAttribute("aria-pressed", "false");
-
-    card.addEventListener("click", function() {
-      selectCategory(this.dataset.category);
-    });
-
   });
 
+  matchingCard.classList.add("selected");
+  matchingCard.setAttribute("aria-pressed", "true");
 
-  // Automatically select category from landing page.
+  categoryError.classList.add("hidden");
 
-  if (categoryPrefill) {
-    const selected = selectCategory(categoryPrefill);
+  categoryStatus.textContent =
+    "Selected category: " + matchingCard.dataset.category;
 
-    if (!selected) {
-      categoryStatus.textContent =
-        "Please choose the category that best describes your product.";
-
-      categoryInput.value = "";
-    }
-  }
-
-
-  // =========================================
-  // PROGRESS INDICATOR
-  // =========================================
-
-  const progressFill =
-    document.getElementById("progressFill");
-
-  const progressText =
-    document.getElementById("progressText");
-
-  const trackedFields = [
-    "customer_name",
-    "whatsapp",
-    "category",
-    "product_name",
-    "quantity",
-    "budget",
-    "delivery_location"
-  ];
-
-  function updateProgress() {
-
-    let completed = 0;
-
-    trackedFields.forEach(id => {
-
-      const field = document.getElementById(id);
-
-      if (field && String(field.value).trim() !== "") {
-        completed++;
-      }
-
-    });
-
-    const percentage =
-      Math.round((completed / trackedFields.length) * 100);
-
-    progressFill.style.width = percentage + "%";
-
-    progressText.textContent =
-      percentage + "% of the main details completed";
-
-  }
-
-
-  orderForm.querySelectorAll("input, textarea, select").forEach(field => {
-    field.addEventListener("input", updateProgress);
-    field.addEventListener("change", updateProgress);
-  });
-
-
-  categoryCards.forEach(card => {
-    card.addEventListener("click", updateProgress);
-  });
-
+  categoryStatus.classList.remove("text-red-500");
+  categoryStatus.classList.add("text-blue-500");
 
   updateProgress();
 
+  return true;
+}
 
-  // =========================================
-  // ORDER SUBMISSION
-  // =========================================
+categoryCards.forEach(card => {
+  card.setAttribute("aria-pressed", "false");
 
-  orderForm.addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    if (!orderForm.checkValidity()) {
-      orderForm.reportValidity();
-      return;
-    }
-
-
-    const customerName =
-      document.getElementById("customer_name").value.trim();
-
-    const whatsapp =
-      document.getElementById("whatsapp").value.trim();
-
-    const email =
-      document.getElementById("email").value.trim();
-
-    const productName =
-      productNameInput.value.trim();
-
-    const productDescription =
-      document.getElementById("product_description").value.trim();
-
-    const category =
-      categoryInput.value;
-
-    const subcategory =
-      document.getElementById("subcategory").value.trim();
-
-    const productType =
-      document.getElementById("product_type").value.trim();
-
-    const brand =
-      document.getElementById("brand").value.trim();
-
-    const model =
-      document.getElementById("model").value.trim();
-
-    const quantity =
-      Number(document.getElementById("quantity").value);
-
-    const budget =
-      Number(document.getElementById("budget").value);
-
-    const budgetType =
-      document.getElementById("budget_type").value;
-
-    const referenceUrl =
-      document.getElementById("reference_url").value.trim();
-
-    const deliveryLocation =
-      document.getElementById("delivery_location").value.trim();
-
-
-    // CATEGORY VALIDATION
-
-    if (!category) {
-
-      categoryError.classList.remove("hidden");
-
-      document.getElementById("categoryGrid").scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-
-      return;
-
-    }
-
-
-    // OTHER VALIDATION
-
-    if (customerName.length < 2) {
-      alert("Please enter your full name.");
-      return;
-    }
-
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
-      alert("Please enter a valid quantity.");
-      return;
-    }
-
-    if (!Number.isFinite(budget) || budget < 0) {
-      alert("Please enter a valid budget.");
-      return;
-    }
-
-
-    // COMBINE CATALOGUE DETAILS WITH DESCRIPTION
-    // This keeps the existing database schema unchanged.
-
-    const catalogueDescription = [];
-
-    if (subcategory) {
-      catalogueDescription.push("Subcategory: " + subcategory);
-    }
-
-    if (productType) {
-      catalogueDescription.push("Product type: " + productType);
-    }
-
-    if (brand) {
-      catalogueDescription.push("Preferred brand: " + brand);
-    }
-
-    if (model) {
-      catalogueDescription.push("Model: " + model);
-    }
-
-    if (productDescription) {
-      catalogueDescription.push("Customer notes: " + productDescription);
-    }
-
-    const finalProductDescription =
-      catalogueDescription.length > 0
-        ? catalogueDescription.join("\n\n")
-        : "No additional specifications provided.";
-
-
-    // UUID AND REFERENCE
-
-    const orderId = crypto.randomUUID();
-
-    const orderReference =
-      "RBUY-" + orderId.substring(0, 8).toUpperCase();
-
-
-    // DATABASE PAYLOAD
-    // Existing field names are preserved.
-
-    const orderData = {
-
-      id: orderId,
-
-      customer_name: customerName,
-
-      email: email || null,
-
-      category: category,
-
-      product_name: productName,
-
-      product_description: finalProductDescription,
-
-      quantity: quantity,
-
-      budget: budget,
-
-      budget_type: budgetType,
-
-      reference_url: referenceUrl || null,
-
-      whatsapp: whatsapp,
-
-      delivery_location: deliveryLocation,
-
-      status: "pending_review",
-
-      payment_status: "unpaid"
-
-    };
-
-
-    submitButton.disabled = true;
-
-    submitText.textContent = "Submitting your request...";
-
-
-    try {
-
-      const { error } = await supabaseClient
-        .from("orders")
-        .insert([orderData]);
-
-      if (error) {
-        throw error;
-      }
-
-
-      // SHOW SUCCESS
-
-      orderReferenceElement.textContent =
-        orderReference;
-
-      orderForm.classList.add("hidden");
-
-      document.querySelector(".progress-line").classList.add("hidden");
-
-      progressText.classList.add("hidden");
-
-      successMessage.classList.remove("hidden");
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-
-
-    } catch (error) {
-
-      console.error("Order submission error:", error);
-
-      alert(
-        "We could not submit your order.\n\n" +
-        error.message +
-        "\n\nPlease try again."
-      );
-
-      submitButton.disabled = false;
-
-      submitText.textContent = "Submit My Request ↗";
-
-    }
-
+  card.addEventListener("click", function() {
+    selectCategory(this.dataset.category);
   });
+});
 
+// Automatically select category from landing page.
+if (categoryPrefill) {
+  const selected = selectCategory(categoryPrefill);
 
-  // =========================================
-  // COPY ORDER REFERENCE
-  // =========================================
+  if (!selected) {
+    categoryStatus.textContent =
+      "Please choose the category that best describes your product.";
 
-  document.getElementById("copyReference")
-    .addEventListener("click", async function() {
+    categoryInput.value = "";
+  }
+}
 
-      const reference =
-        orderReferenceElement.textContent;
+// =========================================
+// ORDER SUBMISSION
+// =========================================
+orderForm.addEventListener("submit", async function(event) {
+  event.preventDefault();
 
-      try {
+  // Validate category before native browser validation.
+  const category = categoryInput.value.trim();
 
-        await navigator.clipboard.writeText(reference);
+  if (!category) {
+    categoryError.classList.remove("hidden");
 
-        this.textContent = "Copied!";
+    categoryStatus.textContent = "Please choose a product category.";
+    categoryStatus.classList.remove("text-blue-500");
+    categoryStatus.classList.add("text-red-500");
 
-      } catch {
-
-        alert("Your order reference is: " + reference);
-
-      }
-
+    document.getElementById("categoryGrid").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
     });
 
+    return;
+  }
 
-  // =========================================
-  // COPYRIGHT YEAR
-  // =========================================
+  if (!orderForm.checkValidity()) {
+    orderForm.reportValidity();
+    return;
+  }
 
-  document.getElementById("year").textContent =
-    new Date().getFullYear();
+  if (!supabaseClient) {
+    alert(
+      "The order service is temporarily unavailable because the database connection did not load. Please refresh the page and try again."
+    );
+
+    console.error("R-BUY submission stopped: Supabase client is unavailable.");
+    return;
+  }
+
+  const customerName =
+    document.getElementById("customer_name").value.trim();
+
+  const whatsapp =
+    document.getElementById("whatsapp").value.trim();
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const productName =
+    productNameInput.value.trim();
+
+  const productDescription =
+    document.getElementById("product_description").value.trim();
+
+  const subcategory =
+    document.getElementById("subcategory").value.trim();
+
+  const productType =
+    document.getElementById("product_type").value.trim();
+
+  const brand =
+    document.getElementById("brand").value.trim();
+
+  const model =
+    document.getElementById("model").value.trim();
+
+  const quantity =
+    Number(document.getElementById("quantity").value);
+
+  const budget =
+    Number(document.getElementById("budget").value);
+
+  const budgetType =
+    document.getElementById("budget_type").value;
+
+  const referenceUrl =
+    document.getElementById("reference_url").value.trim();
+
+  const deliveryLocation =
+    document.getElementById("delivery_location").value.trim();
+
+  // OTHER VALIDATION
+  if (customerName.length < 2) {
+    alert("Please enter your full name.");
+    return;
+  }
+
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
+    alert("Please enter a valid quantity.");
+    return;
+  }
+
+  if (!Number.isFinite(budget) || budget < 0) {
+    alert("Please enter a valid budget.");
+    return;
+  }
+
+  // Combine catalogue details with description.
+  const catalogueDescription = [];
+
+  if (subcategory) {
+    catalogueDescription.push("Subcategory: " + subcategory);
+  }
+
+  if (productType) {
+    catalogueDescription.push("Product type: " + productType);
+  }
+
+  if (brand) {
+    catalogueDescription.push("Preferred brand: " + brand);
+  }
+
+  if (model) {
+    catalogueDescription.push("Model: " + model);
+  }
+
+  if (productDescription) {
+    catalogueDescription.push("Customer notes: " + productDescription);
+  }
+
+  const finalProductDescription =
+    catalogueDescription.length > 0
+      ? catalogueDescription.join("\n\n")
+      : "No additional specifications provided.";
+
+  // UUID AND REFERENCE
+  const orderId =
+    (window.crypto && typeof window.crypto.randomUUID === "function")
+      ? window.crypto.randomUUID()
+      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(character) {
+          const random = Math.random() * 16 | 0;
+          const value = character === "x" ? random : (random & 0x3 | 0x8);
+          return value.toString(16);
+        });
+
+  const orderReference =
+    "RBUY-" + orderId.substring(0, 8).toUpperCase();
+
+  // DATABASE PAYLOAD
+  const orderData = {
+    id: orderId,
+    customer_name: customerName,
+    email: email || null,
+    category: category,
+    product_name: productName,
+    product_description: finalProductDescription,
+    quantity: quantity,
+    budget: budget,
+    budget_type: budgetType,
+    reference_url: referenceUrl || null,
+    whatsapp: whatsapp,
+    delivery_location: deliveryLocation,
+    status: "pending_review",
+    payment_status: "unpaid"
+  };
+
+  submitButton.disabled = true;
+  submitText.textContent = "Submitting your request...";
+
+  try {
+    const { error } = await supabaseClient
+      .from("orders")
+      .insert([orderData]);
+
+    if (error) {
+      throw error;
+    }
+
+    // SHOW SUCCESS
+    orderReferenceElement.textContent = orderReference;
+
+    orderForm.classList.add("hidden");
+
+    document.querySelector(".progress-line").classList.add("hidden");
+    progressText.classList.add("hidden");
+
+    successMessage.classList.remove("hidden");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+    console.error("R-BUY order submission failed:", {
+      message: error && error.message ? error.message : String(error),
+      details: error && error.details ? error.details : null,
+      hint: error && error.hint ? error.hint : null,
+      code: error && error.code ? error.code : null,
+      status: error && error.status ? error.status : null
+    });
+
+    const errorMessage = error && error.message
+      ? error.message
+      : "An unknown database error occurred.";
+
+    alert(
+      "We could not submit your order.\n\n" +
+      errorMessage +
+      "\n\nPlease try again. If the problem continues, contact R-BUY."
+    );
+
+    submitButton.disabled = false;
+    submitText.textContent = "Submit My Request ↗";
+  }
+});
+
+// =========================================
+// COPY ORDER REFERENCE
+// =========================================
+document.getElementById("copyReference")
+.addEventListener("click", async function() {
+  const reference = orderReferenceElement.textContent;
+
+  try {
+    await navigator.clipboard.writeText(reference);
+    this.textContent = "Copied!";
+  } catch {
+    alert("Your order reference is: " + reference);
+  }
+});
+
+// =========================================
+// COPYRIGHT YEAR
+// =========================================
+document.getElementById("year").textContent =
+  new Date().getFullYear();
 
 </script>
 
