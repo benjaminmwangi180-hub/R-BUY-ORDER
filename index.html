@@ -1,535 +1,316 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Place an Order | R-BUY</title>
-
-  <meta name="description"
-
-    content="Tell R-BUY what you're looking for. We'll investigate sourcing options, pricing and delivery.">
-
-  <meta name="theme-color" content="#f8f8f5">
-
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-
-    :root {
-
-      --bg: #f8f8f5;
-
-      --white: #ffffff;
-
-      --ink: #18181b;
-
-      --blue: #3b82f6;
-
-      --orange: #f59e0b;
-
-      --muted: #71717a;
-
-      --line: #e4e4e7;
-
-    }
-
-    * {
-
-      box-sizing: border-box;
-
-    }
-
-    html {
-
-      scroll-behavior: smooth;
-
-    }
-
-    body {
-
-      margin: 0;
-
-      background: var(--bg);
-
-      color: var(--ink);
-
-      font-family: 'DM Sans', sans-serif;
-
-      overflow-x: hidden;
-
-    }
-
-    ::selection {
-
-      background: var(--blue);
-
-      color: white;
-
-    }
-
-    .mono {
-
-      font-family: 'DM Mono', monospace;
-
-    }
-
-    .handwritten {
-
-      font-family: 'Caveat', cursive;
-
-    }
-
-    .editorial-title {
-
-      letter-spacing: -.075em;
-
-      line-height: .95;
-
-    }
-
-    .blue-text {
-
-      color: var(--blue);
-
-    }
-
-    .page-grid {
-
-      background-image:
-
-        linear-gradient(rgba(24,24,27,.035) 1px, transparent 1px),
-
-        linear-gradient(90deg, rgba(24,24,27,.035) 1px, transparent 1px);
-
-      background-size: 40px 40px;
-
-      mask-image: linear-gradient(to bottom, black, transparent 90%);
-
-    }
-
-    .nav-link {
-
-      transition: color .2s ease;
-
-    }
-
-    .nav-link:hover {
-
-      color: var(--blue);
-
-    }
-
-    .primary-button {
-
-      transition: transform .2s ease, background .2s ease;
-
-    }
-
-    .primary-button:hover {
-
-      transform: translateY(-2px);
-
-      background: #2563eb;
-
-    }
-
-    .section-card {
-
-      position: relative;
-
-      background: white;
-
-      border: 1px solid var(--line);
-
-      border-radius: 18px;
-
-      padding: 28px;
-
-      box-shadow: 0 12px 35px rgba(24,24,27,.035);
-
-    }
-
-    .section-number {
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      width: 35px;
-
-      height: 35px;
-
-      border-radius: 50%;
-
-      background: #eff6ff;
-
-      color: var(--blue);
-
-      font-family: 'DM Mono', monospace;
-
-      font-size: 12px;
-
-      font-weight: 500;
-
-      flex-shrink: 0;
-
-    }
-
-    .field-label {
-
-      display: block;
-
-      font-size: 13px;
-
-      font-weight: 700;
-
-      color: #3f3f46;
-
-      margin-bottom: 9px;
-
-    }
-
-    .required {
-
-      color: var(--blue);
-
-    }
-
-    .input-field {
-
-      width: 100%;
-
-      padding: 14px 15px;
-
-      background: #fafafa;
-
-      border: 1px solid #e4e4e7;
-
-      border-radius: 10px;
-
-      color: #18181b;
-
-      outline: none;
-
-      font-family: 'DM Sans', sans-serif;
-
-      font-size: 14px;
-
-      transition: border .2s ease, box-shadow .2s ease, background .2s ease;
-
-    }
-
-    .input-field:focus {
-
-      border-color: var(--blue);
-
-      background: white;
-
-      box-shadow: 0 0 0 3px rgba(59,130,246,.10);
-
-    }
-
-    .input-field::placeholder {
-
-      color: #a1a1aa;
-
-    }
-
-    select.input-field {
-
-      cursor: pointer;
-
-    }
-
-    textarea.input-field {
-
-      resize: vertical;
-
-      min-height: 110px;
-
-    }
-
-    .helper-text {
-
-      margin-top: 8px;
-
-      font-size: 11px;
-
-      line-height: 1.7;
-
-      color: #a1a1aa;
-
-    }
-
-    .category-option {
-
-      position: relative;
-
-      min-height: 105px;
-
-      padding: 15px;
-
-      border: 1px solid var(--line);
-
-      border-radius: 13px;
-
-      background: #fafafa;
-
-      text-align: left;
-
-      cursor: pointer;
-
-      transition: all .2s ease;
-
-    }
-
-    .category-option:hover {
-
-      border-color: #93c5fd;
-
-      background: #f0f7ff;
-
-      transform: translateY(-2px);
-
-    }
-
-    .category-option.selected {
-
-      border-color: var(--blue);
-
-      background: #eff6ff;
-
-      box-shadow: 0 0 0 2px rgba(59,130,246,.08);
-
-    }
-
-    .category-option.selected::after {
-
-      content: "✓";
-
-      position: absolute;
-
-      right: 12px;
-
-      top: 10px;
-
-      color: var(--blue);
-
-      font-weight: 900;
-
-      font-size: 14px;
-
-    }
-
-    .category-option .category-emoji {
-
-      display: block;
-
-      font-size: 27px;
-
-      margin-bottom: 9px;
-
-    }
-
-    .category-option .category-name {
-
-      display: block;
-
-      font-size: 12px;
-
-      font-weight: 700;
-
-      color: #27272a;
-
-    }
-
-    .progress-line {
-
-      height: 5px;
-
-      border-radius: 20px;
-
-      background: #e4e4e7;
-
-      overflow: hidden;
-
-    }
-
-    .progress-fill {
-
-      width: 0%;
-
-      height: 100%;
-
-      background: var(--blue);
-
-      border-radius: 20px;
-
-      transition: width .35s ease;
-
-    }
-
-    .catalogue-notice {
-
-      border: 1px solid #bfdbfe;
-
-      background: #eff6ff;
-
-      border-radius: 13px;
-
-      padding: 16px;
-
-    }
-
-    .catalogue-selection {
-
-      border: 1px dashed #93c5fd;
-
-      background: #f8fbff;
-
-      border-radius: 13px;
-
-      padding: 15px;
-
-    }
-
-    .floating-cart {
-
-      position: fixed;
-
-      right: 20px;
-
-      bottom: 20px;
-
-      z-index: 40;
-
-      pointer-events: none;
-
-      animation: cartBounce 1.8s ease-in-out infinite;
-
-    }
-
-    @keyframes cartBounce {
-
-      0%, 100% {
-
-        transform: translateY(0) rotate(0deg);
-
-      }
-
-      45% {
-
-        transform: translateY(-9px) rotate(-3deg);
-
-      }
-
-      65% {
-
-        transform: translateY(-3px) rotate(2deg);
-
-      }
-
-    }
-
-    .success-card {
-
-      background: white;
-
-      border: 1px solid #e4e4e7;
-
-      border-radius: 22px;
-
-      box-shadow: 0 20px 60px rgba(24,24,27,.06);
-
-    }
-
-    .success-check {
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      width: 70px;
-
-      height: 70px;
-
-      margin: 0 auto;
-
-      border-radius: 50%;
-
-      background: #dcfce7;
-
-      color: #16a34a;
-
-      font-size: 34px;
-
-      font-weight: 700;
-
-    }
-
-    @media (max-width: 640px) {
-
-      .section-card {
-
-        padding: 21px;
-
-      }
-
-      .category-option {
-
-        min-height: 95px;
-
-        padding: 12px;
-
-      }
-
-      .floating-cart {
-
-        right: 12px;
-
-        bottom: 12px;
-
-        transform: scale(.85);
-
-      }
-
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-
-      *, *::before, *::after {
-
-        animation-duration: .01ms !important;
-
-        animation-iteration-count: 1 !important;
-
-        scroll-behavior: auto !important;
-
-        transition-duration: .01ms !important;
-
-      }
-
-    }
-
-  </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Place an Order | R-BUY</title>
+
+  <meta name="description"
+    content="Tell R-BUY what you're looking for. We'll investigate sourcing options, pricing and delivery.">
+
+  <meta name="theme-color" content="#f8f8f5">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f8f8f5;
+      --white: #ffffff;
+      --ink: #18181b;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: var(--blue);
+      color: white;
+    }
+
+    .mono {
+      font-family: 'DM Mono', monospace;
+    }
+
+    .handwritten {
+      font-family: 'Caveat', cursive;
+    }
+
+    .editorial-title {
+      letter-spacing: -.075em;
+      line-height: .95;
+    }
+
+    .blue-text {
+      color: var(--blue);
+    }
+
+    .page-grid {
+      background-image:
+        linear-gradient(rgba(24,24,27,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24,24,27,.035) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+    }
+
+    .nav-link {
+      transition: color .2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--blue);
+    }
+
+    .primary-button {
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-2px);
+      background: #2563eb;
+    }
+
+    .section-card {
+      position: relative;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 12px 35px rgba(24,24,27,.035);
+    }
+
+    .section-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #eff6ff;
+      color: var(--blue);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #3f3f46;
+      margin-bottom: 9px;
+    }
+
+    .required {
+      color: var(--blue);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 14px 15px;
+      background: #fafafa;
+      border: 1px solid #e4e4e7;
+      border-radius: 10px;
+      color: #18181b;
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      transition: border .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .input-field:focus {
+      border-color: var(--blue);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+    }
+
+    .input-field::placeholder {
+      color: #a1a1aa;
+    }
+
+    select.input-field {
+      cursor: pointer;
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .helper-text {
+      margin-top: 8px;
+      font-size: 11px;
+      line-height: 1.7;
+      color: #a1a1aa;
+    }
+
+    .category-option {
+      position: relative;
+      min-height: 105px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fafafa;
+      text-align: left;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    .category-option:hover {
+      border-color: #93c5fd;
+      background: #f0f7ff;
+      transform: translateY(-2px);
+    }
+
+    .category-option.selected {
+      border-color: var(--blue);
+      background: #eff6ff;
+      box-shadow: 0 0 0 2px rgba(59,130,246,.08);
+    }
+
+    .category-option.selected::after {
+      content: "✓";
+      position: absolute;
+      right: 12px;
+      top: 10px;
+      color: var(--blue);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .category-option .category-emoji {
+      display: block;
+      font-size: 27px;
+      margin-bottom: 9px;
+    }
+
+    .category-option .category-name {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #27272a;
+    }
+
+    .progress-line {
+      height: 5px;
+      border-radius: 20px;
+      background: #e4e4e7;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--blue);
+      border-radius: 20px;
+      transition: width .35s ease;
+    }
+
+    .catalogue-notice {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      border-radius: 13px;
+      padding: 16px;
+    }
+
+    .catalogue-selection {
+      border: 1px dashed #93c5fd;
+      background: #f8fbff;
+      border-radius: 13px;
+      padding: 15px;
+    }
+
+    .floating-cart {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      pointer-events: none;
+      animation: cartBounce 1.8s ease-in-out infinite;
+    }
+
+    @keyframes cartBounce {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      45% {
+        transform: translateY(-9px) rotate(-3deg);
+      }
+      65% {
+        transform: translateY(-3px) rotate(2deg);
+      }
+    }
+
+    .success-card {
+      background: white;
+      border: 1px solid #e4e4e7;
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(24,24,27,.06);
+    }
+
+    .success-check {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+      margin: 0 auto;
+      border-radius: 50%;
+      background: #dcfce7;
+      color: #16a34a;
+      font-size: 34px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .section-card {
+        padding: 21px;
+      }
+
+      .category-option {
+        min-height: 95px;
+        padding: 12px;
+      }
+
+      .floating-cart {
+        right: 12px;
+        bottom: 12px;
+        transform: scale(.85);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
 </head>
 
 <body class="min-h-screen">
@@ -537,1815 +318,1312 @@
 <!-- NAVIGATION -->
 
 <header class="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-xl">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
 
-  <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
+    <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+       class="text-2xl font-black tracking-tight">
+      R<span class="text-blue-500">-</span>BUY<span class="text-blue-500">.</span>
+    </a>
 
-    <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+    <div class="hidden items-center gap-7 text-sm text-zinc-500 md:flex">
+      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/" class="nav-link">Home</a>
+      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/#categories" class="nav-link">Categories</a>
+      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/#how-it-works" class="nav-link">How it works</a>
+    </div>
 
-       class="text-2xl font-black tracking-tight">
+    <span class="mono text-[10px] tracking-widest text-blue-500">
+      ORDER REQUEST / 001
+    </span>
 
-      R<span class="text-blue-500">-</span>BUY<span class="text-blue-500">.</span>
-
-    </a>
-
-    <div class="hidden items-center gap-7 text-sm text-zinc-500 md:flex">
-
-      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/" class="nav-link">Home</a>
-
-      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/#categories" class="nav-link">Categories</a>
-
-      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/#how-it-works" class="nav-link">How it works</a>
-
-    </div>
-
-    <span class="mono text-[10px] tracking-widest text-blue-500">
-
-      ORDER REQUEST / 001
-
-    </span>
-
-  </nav>
-
+  </nav>
 </header>
+
 
 <main class="relative">
 
-  <div class="page-grid pointer-events-none absolute inset-x-0 top-0 h-[600px]"></div>
+  <div class="page-grid pointer-events-none absolute inset-x-0 top-0 h-[600px]"></div>
 
-  <!-- INTRODUCTION -->
+  <!-- INTRODUCTION -->
 
-  <section class="relative mx-auto max-w-7xl px-5 pb-10 pt-16 sm:px-8 sm:pt-20">
+  <section class="relative mx-auto max-w-7xl px-5 pb-10 pt-16 sm:px-8 sm:pt-20">
 
-    <div class="grid items-center gap-10 lg:grid-cols-2">
+    <div class="grid items-center gap-10 lg:grid-cols-2">
 
-      <div>
+      <div>
 
-        <div class="inline-flex items-center gap-2 border border-blue-100 bg-blue-50 px-3 py-2">
+        <div class="inline-flex items-center gap-2 border border-blue-100 bg-blue-50 px-3 py-2">
+          <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+          <span class="mono text-[9px] tracking-[.17em] text-blue-600">
+            RETAIL BUY / PRODUCT SOURCING
+          </span>
+        </div>
 
-          <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+        <h1 class="editorial-title mt-8 text-5xl font-black sm:text-7xl lg:text-[82px]">
+          Let's find<br>
+          what you<br>
+          <span class="text-blue-500">need.</span>
+        </h1>
 
-          <span class="mono text-[9px] tracking-[.17em] text-blue-600">
+        <p class="mt-7 max-w-lg text-sm leading-7 text-zinc-500 sm:text-base">
+          Tell us what you're looking for. We'll investigate the
+          available options, prepare a quotation and help you get it.
+        </p>
 
-            RETAIL BUY / PRODUCT SOURCING
+        <p class="handwritten mt-5 text-2xl text-orange-500">
+          No catalogue limits. Just tell us.
+        </p>
 
-          </span>
+      </div>
 
-        </div>
+      <div class="relative mx-auto w-full max-w-md">
 
-        <h1 class="editorial-title mt-8 text-5xl font-black sm:text-7xl lg:text-[82px]">
+        <div class="absolute inset-10 rounded-full bg-blue-100 blur-3xl"></div>
 
-          Let's find<br>
+        <div class="relative grid grid-cols-2 gap-3">
 
-          what you<br>
+          <div class="rotate-[-4deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+            <span class="text-5xl">🎧</span>
+            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">TECH / 001</p>
+          </div>
 
-          <span class="text-blue-500">need.</span>
+          <div class="mt-8 rotate-[4deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+            <span class="text-5xl">👟</span>
+            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">STYLE / 002</p>
+          </div>
 
-        </h1>
+          <div class="rotate-[3deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+            <span class="text-5xl">📷</span>
+            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">CREATIVE / 003</p>
+          </div>
 
-        <p class="mt-7 max-w-lg text-sm leading-7 text-zinc-500 sm:text-base">
+          <div class="mt-[-30px] rotate-[-5deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+            <span class="text-5xl">⌚</span>
+            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">LIFESTYLE / 004</p>
+          </div>
 
-          Tell us what you're looking for. We'll investigate the
+        </div>
 
-          available options, prepare a quotation and help you get it.
+        <p class="handwritten absolute -bottom-9 right-5 rotate-[-5deg] text-xl text-blue-500">
+          Your next great find →
+        </p>
 
-        </p>
+      </div>
 
-        <p class="handwritten mt-5 text-2xl text-orange-500">
+    </div>
 
-          No catalogue limits. Just tell us.
+  </section>
 
-        </p>
 
-      </div>
+  <!-- ORDER FORM -->
 
-      <div class="relative mx-auto w-full max-w-md">
+  <section class="relative mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-8">
 
-        <div class="absolute inset-10 rounded-full bg-blue-100 blur-3xl"></div>
+    <div class="mb-8">
 
-        <div class="relative grid grid-cols-2 gap-3">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="mono text-[10px] tracking-widest text-blue-500">
+            YOUR REQUEST
+          </p>
+          <h2 class="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+            Let's get the details.
+          </h2>
+        </div>
 
-          <div class="rotate-[-4deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+        <span class="handwritten text-xl text-orange-500">
+          Almost there!
+        </span>
+      </div>
 
-            <span class="text-5xl">🎧</span>
+      <div class="progress-line mt-6">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
 
-            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">TECH / 001</p>
+      <p id="progressText" class="mt-2 text-right text-[10px] text-zinc-400">
+        0% completed
+      </p>
 
-          </div>
+    </div>
 
-          <div class="mt-8 rotate-[4deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
 
-            <span class="text-5xl">👟</span>
+    <form id="orderForm" class="space-y-6">
 
-            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">STYLE / 002</p>
+      <!-- CUSTOMER INFORMATION -->
 
-          </div>
+      <section class="section-card space-y-6">
 
-          <div class="rotate-[3deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+        <div class="flex items-start gap-4">
+          <span class="section-number">01</span>
 
-            <span class="text-5xl">📷</span>
+          <div>
+            <h2 class="text-lg font-bold">Who's placing the order?</h2>
+            <p class="mt-1 text-xs leading-6 text-zinc-400">
+              Just enough information for us to identify and contact you.
+            </p>
+          </div>
+        </div>
 
-            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">CREATIVE / 003</p>
+        <div>
+          <label for="customer_name" class="field-label">
+            Full Name <span class="required">*</span>
+          </label>
 
-          </div>
+          <input
+            type="text"
+            id="customer_name"
+            name="customer_name"
+            class="input-field"
+            placeholder="Your full name"
+            autocomplete="name"
+            minlength="2"
+            maxlength="100"
+            required>
+        </div>
 
-          <div class="mt-[-30px] rotate-[-5deg] rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-lg">
+        <div class="grid gap-5 sm:grid-cols-2">
 
-            <span class="text-5xl">⌚</span>
+          <div>
+            <label for="whatsapp" class="field-label">
+              WhatsApp Number <span class="required">*</span>
+            </label>
 
-            <p class="mono mt-4 text-[9px] tracking-widest text-zinc-400">LIFESTYLE / 004</p>
+            <input
+              type="tel"
+              id="whatsapp"
+              name="whatsapp"
+              class="input-field"
+              placeholder="+254 7XX XXX XXX"
+              autocomplete="tel"
+              maxlength="25"
+              required>
 
-          </div>
+            <p class="helper-text">Include your country code.</p>
+          </div>
 
-        </div>
+          <div>
+            <label for="email" class="field-label">Email Address</label>
 
-        <p class="handwritten absolute -bottom-9 right-5 rotate-[-5deg] text-xl text-blue-500">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="input-field"
+              placeholder="you@example.com"
+              autocomplete="email"
+              maxlength="254">
 
-          Your next great find →
+            <p class="helper-text">Optional, but useful for updates.</p>
+          </div>
 
-        </p>
+        </div>
 
-      </div>
+      </section>
 
-    </div>
 
-  </section>
+      <!-- PRODUCT INFORMATION -->
 
-  <!-- ORDER FORM -->
+      <section class="section-card space-y-6">
 
-  <section class="relative mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-8">
+        <div class="flex items-start gap-4">
+          <span class="section-number">02</span>
 
-    <div class="mb-8">
+          <div>
+            <h2 class="text-lg font-bold">What are we finding?</h2>
+            <p class="mt-1 text-xs leading-6 text-zinc-400">
+              Your catalogue selection will appear here. You can edit any detail
+              or describe a completely different product.
+            </p>
+          </div>
+        </div>
 
-      <div class="flex items-center justify-between gap-4">
 
-        <div>
+        <!-- CATALOGUE NOTICE -->
 
-          <p class="mono text-[10px] tracking-widest text-blue-500">
+        <div class="catalogue-notice">
 
-            YOUR REQUEST
+          <div class="flex items-start gap-3">
+            <span class="text-xl">ℹ️</span>
 
-          </p>
+            <div>
+              <h3 class="text-sm font-bold text-blue-900">
+                A note about our catalogue
+              </h3>
 
-          <h2 class="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+              <p class="mt-2 text-xs leading-6 text-blue-800">
+                All products displayed on R-BUY are for illustration and product
+                discovery purposes. Listing a product does not mean it is
+                currently in stock or immediately available. Once we have
+                sourced and confirmed the availability of your requested
+                product, we will notify you with the details.
+              </p>
+            </div>
+          </div>
 
-            Let's get the details.
+        </div>
 
-          </h2>
 
-        </div>
+        <!-- SELECTED CATALOGUE DETAILS -->
 
-        <span class="handwritten text-xl text-orange-500">
+        <div id="catalogueSelection" class="catalogue-selection hidden">
 
-          Almost there!
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="mono text-[9px] tracking-widest text-blue-500">
+                YOUR CATALOGUE SELECTION
+              </p>
 
-        </span>
+              <h3 class="mt-1 text-sm font-bold text-zinc-800">
+                Product details received
+              </h3>
+            </div>
 
-      </div>
+            <span class="rounded-full bg-blue-100 px-3 py-1 text-[9px] font-bold text-blue-600">
+              EDITABLE
+            </span>
+          </div>
 
-      <div class="progress-line mt-6">
+          <p id="catalogueSummary"
+             class="mt-3 text-xs leading-6 text-zinc-600"></p>
 
-        <div id="progressFill" class="progress-fill"></div>
+          <p class="mt-2 text-[10px] leading-5 text-zinc-400">
+            These details came from your catalogue selection. You can change
+            them below before submitting your request.
+          </p>
 
-      </div>
+        </div>
 
-      <p id="progressText" class="mt-2 text-right text-[10px] text-zinc-400">
 
-        0% completed
+        <!-- CATEGORY -->
 
-      </p>
+        <div>
 
-    </div>
+          <label class="field-label">
+            Product Category <span class="required">*</span>
+          </label>
 
-    <form id="orderForm" class="space-y-6">
+          <div id="categoryGrid" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
-      <!-- CUSTOMER INFORMATION -->
+            <button type="button" class="category-option" data-category="Electronics">
+              <span class="category-emoji">🎧</span>
+              <span class="category-name">Electronics</span>
+            </button>
 
-      <section class="section-card space-y-6">
+            <button type="button" class="category-option" data-category="Fashion">
+              <span class="category-emoji">👟</span>
+              <span class="category-name">Fashion</span>
+            </button>
 
-        <div class="flex items-start gap-4">
+            <button type="button" class="category-option" data-category="Home & Living">
+              <span class="category-emoji">🛋️</span>
+              <span class="category-name">Home & Living</span>
+            </button>
 
-          <span class="section-number">01</span>
+            <button type="button" class="category-option" data-category="Beauty & Personal Care">
+              <span class="category-emoji">✨</span>
+              <span class="category-name">Beauty & Care</span>
+            </button>
 
-          <div>
+            <button type="button" class="category-option" data-category="Sports & Outdoors">
+              <span class="category-emoji">⚽</span>
+              <span class="category-name">Sports & Outdoors</span>
+            </button>
 
-            <h2 class="text-lg font-bold">Who's placing the order?</h2>
+            <button type="button" class="category-option" data-category="Automotive">
+              <span class="category-emoji">🚘</span>
+              <span class="category-name">Automotive</span>
+            </button>
 
-            <p class="mt-1 text-xs leading-6 text-zinc-400">
+            <button type="button" class="category-option" data-category="Office & Technology">
+              <span class="category-emoji">💻</span>
+              <span class="category-name">Office & Tech</span>
+            </button>
 
-              Just enough information for us to identify and contact you.
+            <button type="button" class="category-option" data-category="Other">
+              <span class="category-emoji">📦</span>
+              <span class="category-name">Something else</span>
+            </button>
 
-            </p>
+          </div>
 
-          </div>
+          <input type="hidden" id="category" name="category" required>
 
-        </div>
+          <p id="categoryError" class="mt-3 hidden text-xs text-red-500">
+            Please select a product category.
+          </p>
 
-        <div>
+          <p id="categoryStatus" class="helper-text">
+            Pick the category that best describes your product.
+          </p>
 
-          <label for="customer_name" class="field-label">
+        </div>
 
-            Full Name <span class="required">*</span>
 
-          </label>
+        <!-- SUBCATEGORY -->
 
-          <input
+        <div>
+          <label for="subcategory" class="field-label">
+            Subcategory <span class="text-zinc-400 font-normal">(Optional)</span>
+          </label>
 
-            type="text"
+          <input
+            type="text"
+            id="subcategory"
+            class="input-field"
+            placeholder="e.g. Audio, Kitchen Appliances, Footwear"
+            maxlength="150">
 
-            id="customer_name"
+          <p class="helper-text">
+            The general product group from the catalogue, if applicable.
+          </p>
+        </div>
 
-            name="customer_name"
 
-            class="input-field"
+        <!-- PRODUCT TYPE -->
 
-            placeholder="Your full name"
+        <div>
+          <label for="product_type" class="field-label">
+            Product Type <span class="text-zinc-400 font-normal">(Optional)</span>
+          </label>
 
-            autocomplete="name"
+          <input
+            type="text"
+            id="product_type"
+            class="input-field"
+            placeholder="e.g. Earpods, Air Fryer, Running Shoes"
+            maxlength="150">
 
-            minlength="2"
+          <p class="helper-text">
+            You don't have to know the exact product type. A simple description works too.
+          </p>
+        </div>
 
-            maxlength="100"
 
-            required>
+        <!-- PRODUCT NAME -->
 
-        </div>
+        <div>
+          <label for="product_name" class="field-label">
+            Product Name <span class="required">*</span>
+          </label>
 
-        <div class="grid gap-5 sm:grid-cols-2">
+          <input
+            type="text"
+            id="product_name"
+            name="product_name"
+            class="input-field"
+            placeholder="e.g. Samsung Galaxy S25"
+            maxlength="200"
+            required>
 
-          <div>
+          <p class="helper-text">
+            Enter the product you're looking for. If you selected an item from
+            the catalogue, its name will be filled in automatically.
+          </p>
+        </div>
 
-            <label for="whatsapp" class="field-label">
 
-              WhatsApp Number <span class="required">*</span>
+        <!-- BRAND AND MODEL -->
+
+        <div class="grid gap-5 sm:grid-cols-2">
+
+          <div>
+            <label for="brand" class="field-label">
+              Preferred Brand <span class="text-zinc-400 font-normal">(Optional)</span>
+            </label>
 
-            </label>
+            <input
+              type="text"
+              id="brand"
+              class="input-field"
+              placeholder="e.g. Apple, Samsung, Nike"
+              maxlength="120">
+          </div>
 
-            <input
+          <div>
+            <label for="model" class="field-label">
+              Model / Version <span class="text-zinc-400 font-normal">(Optional)</span>
+            </label>
 
-              type="tel"
+            <input
+              type="text"
+              id="model"
+              class="input-field"
+              placeholder="e.g. AirPods Pro 2"
+              maxlength="150">
+          </div>
 
-              id="whatsapp"
+        </div>
 
-              name="whatsapp"
+        <p class="helper-text -mt-3">
+          Brand and model are optional. If you're unsure, leave them blank.
+          Our team can help identify suitable options.
+        </p>
 
-              class="input-field"
+
+        <!-- ADDITIONAL DETAILS -->
+
+        <div>
+          <label for="product_description" class="field-label">
+            Additional Details
+            <span class="text-zinc-400 font-normal">(Optional)</span>
+          </label>
+
+          <textarea
+            id="product_description"
+            name="product_description"
+            class="input-field"
+            rows="4"
+            maxlength="3000"
+            placeholder="Any particular colour, size, model, specifications or other preferences? Add them here."></textarea>
+
+          <p class="helper-text">
+            Don't have all the details? No problem. We can clarify with you during the sourcing process.
+          </p>
+        </div>
+
+
+        <!-- QUANTITY AND LINK -->
+
+        <div class="grid gap-5 sm:grid-cols-2">
+
+          <div>
+            <label for="quantity" class="field-label">
+              Quantity <span class="required">*</span>
+            </label>
+
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              class="input-field"
+              min="1"
+              max="10000"
+              step="1"
+              value="1"
+              required>
+          </div>
 
-              placeholder="+254 7XX XXX XXX"
+          <div>
+            <label for="reference_url" class="field-label">
+              Product Link <span class="text-zinc-400 font-normal">(Optional)</span>
+            </label>
+
+            <input
+              type="url"
+              id="reference_url"
+              name="reference_url"
+              class="input-field"
+              placeholder="https://example.com/product">
+          </div>
+
+        </div>
+
+        <div class="border-l-2 border-orange-400 bg-orange-50 px-4 py-3">
+          <p class="text-xs leading-6 text-zinc-600">
+            <strong class="text-zinc-800">A little tip:</strong>
+            If you have seen the product somewhere online, paste its link.
+            It can make identifying the exact item much easier.
+          </p>
+        </div>
+
+      </section>
+
+
+      <!-- BUDGET -->
+
+      <section class="section-card space-y-6">
+
+        <div class="flex items-start gap-4">
+          <span class="section-number">03</span>
 
-              autocomplete="tel"
+          <div>
+            <h2 class="text-lg font-bold">What's your budget?</h2>
+            <p class="mt-1 text-xs leading-6 text-zinc-400">
+              Give us a price range to help guide the search.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label for="budget" class="field-label">
+            Budget Amount (KES) <span class="required">*</span>
+          </label>
+
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
+              KES
+            </span>
 
-              maxlength="25"
+            <input
+              type="number"
+              id="budget"
+              name="budget"
+              class="input-field pl-14"
+              min="0"
+              max="999999999"
+              step="0.01"
+              placeholder="e.g. 25000"
+              required>
+          </div>
+        </div>
 
-              required>
+        <div>
+          <label for="budget_type" class="field-label">
+            What does this budget cover? <span class="required">*</span>
+          </label>
 
-            <p class="helper-text">Include your country code.</p>
+          <select
+            id="budget_type"
+            name="budget_type"
+            class="input-field"
+            required>
 
-          </div>
+            <option value="total">Total order budget</option>
+            <option value="per_item">Budget per item</option>
 
-          <div>
+          </select>
+        </div>
 
-            <label for="email" class="field-label">Email Address</label>
+        <p class="helper-text">
+          Your budget helps us identify suitable options. Final pricing
+          will be confirmed in your quotation before payment.
+        </p>
 
-            <input
+      </section>
 
-              type="email"
 
-              id="email"
+      <!-- DELIVERY -->
 
-              name="email"
+      <section class="section-card space-y-6">
 
-              class="input-field"
+        <div class="flex items-start gap-4">
+          <span class="section-number">04</span>
 
-              placeholder="you@example.com"
+          <div>
+            <h2 class="text-lg font-bold">Where should we deliver?</h2>
+            <p class="mt-1 text-xs leading-6 text-zinc-400">
+              Tell us where you'd like your order delivered.
+            </p>
+          </div>
+        </div>
 
-              autocomplete="email"
+        <div>
+          <label for="delivery_location" class="field-label">
+            Delivery Location <span class="required">*</span>
+          </label>
 
-              maxlength="254">
+          <textarea
+            id="delivery_location"
+            name="delivery_location"
+            class="input-field"
+            rows="3"
+            maxlength="1000"
+            placeholder="County, town, estate, building or preferred delivery point..."
+            required></textarea>
 
-            <p class="helper-text">Optional, but useful for updates.</p>
+          <p class="helper-text">
+            Include enough detail to help us estimate delivery arrangements.
+          </p>
+        </div>
 
-          </div>
+      </section>
 
-        </div>
 
-      </section>
+      <!-- CONSENT -->
 
-      <!-- PRODUCT INFORMATION -->
+      <section class="section-card">
 
-      <section class="section-card space-y-6">
+        <label class="flex cursor-pointer items-start gap-3">
 
-        <div class="flex items-start gap-4">
+          <input
+            type="checkbox"
+            id="consent"
+            class="mt-1 h-4 w-4 accent-blue-500"
+            required>
 
-          <span class="section-number">02</span>
+          <span class="text-xs leading-6 text-zinc-500">
+            I confirm that my information is accurate and authorize
+            R-BUY to contact me regarding this order, including sourcing,
+            quotations, payment and delivery.
+          </span>
 
-          <div>
+        </label>
 
-            <h2 class="text-lg font-bold">What are we finding?</h2>
+      </section>
 
-            <p class="mt-1 text-xs leading-6 text-zinc-400">
 
-              Your catalogue selection will appear here. You can edit any detail
+      <!-- SUBMIT -->
 
-              or describe a completely different product.
+      <div>
 
-            </p>
+        <button
+          type="submit"
+          id="submitButton"
+          class="primary-button w-full rounded-xl bg-blue-500 px-6 py-5 font-bold text-white shadow-lg shadow-blue-500/15 disabled:cursor-not-allowed disabled:opacity-50">
 
-          </div>
+          <span id="submitText">Submit My Request ↗</span>
 
-        </div>
+        </button>
 
-        <!-- CATALOGUE NOTICE -->
+        <p class="mt-4 text-center text-xs leading-6 text-zinc-400">
+          No immediate payment is required. We'll investigate your request
+          and send you a quotation to review first.
+        </p>
 
-        <div class="catalogue-notice">
+      </div>
 
-          <div class="flex items-start gap-3">
+    </form>
 
-            <span class="text-xl">ℹ️</span>
 
-            <div>
+    <!-- SUCCESS MESSAGE -->
 
-              <h3 class="text-sm font-bold text-blue-900">
+    <section id="successMessage" class="success-card hidden mt-8 px-6 py-12 text-center sm:px-12">
 
-                A note about our catalogue
+      <div class="success-check">✓</div>
 
-              </h3>
+      <p class="mono mt-7 text-[10px] tracking-widest text-green-600">
+        REQUEST RECEIVED
+      </p>
 
-              <p class="mt-2 text-xs leading-6 text-blue-800">
+      <h2 class="mt-3 text-3xl font-black tracking-tight">
+        We've got it!
+      </h2>
 
-                All products displayed on R-BUY are for illustration and product
+      <p class="mx-auto mt-4 max-w-md text-sm leading-7 text-zinc-500">
+        Your request has been submitted successfully.
+        Our team will review it and contact you about the next steps.
+      </p>
 
-                discovery purposes. Listing a product does not mean it is
+      <div class="mx-auto mt-8 max-w-sm rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
 
-                currently in stock or immediately available. Once we have
+        <p class="mono text-[9px] tracking-widest text-zinc-400">
+          YOUR ORDER REFERENCE
+        </p>
 
-                sourced and confirmed the availability of your requested
+        <p id="orderReference" class="mt-3 text-2xl font-black text-blue-500"></p>
 
-                product, we will notify you with the details.
+        <button
+          type="button"
+          id="copyReference"
+          class="mt-4 text-xs font-semibold text-zinc-500 hover:text-blue-500">
+          Copy reference
+        </button>
 
-              </p>
+      </div>
 
-            </div>
+      <p class="mt-7 text-sm leading-7 text-zinc-500">
+        Keep your reference number for future communication.
+      </p>
 
-          </div>
+      <p class="handwritten mt-5 text-2xl text-orange-500">
+        Thank you for choosing R-BUY.
+      </p>
 
-        </div>
+      <a
+        href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+        class="primary-button mt-8 inline-block rounded-lg bg-blue-500 px-7 py-4 text-sm font-bold text-white">
+        Return to Homepage ↗
+      </a>
 
-        <!-- SELECTED CATALOGUE DETAILS -->
+    </section>
 
-        <div id="catalogueSelection" class="catalogue-selection hidden">
-
-          <div class="flex items-center justify-between gap-3">
-
-            <div>
-
-              <p class="mono text-[9px] tracking-widest text-blue-500">
-
-                YOUR CATALOGUE SELECTION
-
-              </p>
-
-              <h3 class="mt-1 text-sm font-bold text-zinc-800">
-
-                Product details received
-
-              </h3>
-
-            </div>
-
-            <span class="rounded-full bg-blue-100 px-3 py-1 text-[9px] font-bold text-blue-600">
-
-              EDITABLE
-
-            </span>
-
-          </div>
-
-          <p id="catalogueSummary"
-
-             class="mt-3 text-xs leading-6 text-zinc-600"></p>
-
-          <p class="mt-2 text-[10px] leading-5 text-zinc-400">
-
-            These details came from your catalogue selection. You can change
-
-            them below before submitting your request.
-
-          </p>
-
-        </div>
-
-        <!-- CATEGORY -->
-
-        <div>
-
-          <label class="field-label">
-
-            Product Category <span class="required">*</span>
-
-          </label>
-
-          <div id="categoryGrid" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-
-            <button type="button" class="category-option" data-category="Electronics">
-
-              <span class="category-emoji">🎧</span>
-
-              <span class="category-name">Electronics</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Fashion">
-
-              <span class="category-emoji">👟</span>
-
-              <span class="category-name">Fashion</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Home & Living">
-
-              <span class="category-emoji">🛋️</span>
-
-              <span class="category-name">Home & Living</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Beauty & Personal Care">
-
-              <span class="category-emoji">✨</span>
-
-              <span class="category-name">Beauty & Care</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Sports & Outdoors">
-
-              <span class="category-emoji">⚽</span>
-
-              <span class="category-name">Sports & Outdoors</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Automotive">
-
-              <span class="category-emoji">🚘</span>
-
-              <span class="category-name">Automotive</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Office & Technology">
-
-              <span class="category-emoji">💻</span>
-
-              <span class="category-name">Office & Tech</span>
-
-            </button>
-
-            <button type="button" class="category-option" data-category="Other">
-
-              <span class="category-emoji">📦</span>
-
-              <span class="category-name">Something else</span>
-
-            </button>
-
-          </div>
-
-          <input type="hidden" id="category" name="category" required>
-
-          <p id="categoryError" class="mt-3 hidden text-xs text-red-500">
-
-            Please select a product category.
-
-          </p>
-
-          <p id="categoryStatus" class="helper-text">
-
-            Pick the category that best describes your product.
-
-          </p>
-
-        </div>
-
-        <!-- SUBCATEGORY -->
-
-        <div>
-
-          <label for="subcategory" class="field-label">
-
-            Subcategory <span class="text-zinc-400 font-normal">(Optional)</span>
-
-          </label>
-
-          <input
-
-            type="text"
-
-            id="subcategory"
-
-            class="input-field"
-
-            placeholder="e.g. Audio, Kitchen Appliances, Footwear"
-
-            maxlength="150">
-
-          <p class="helper-text">
-
-            The general product group from the catalogue, if applicable.
-
-          </p>
-
-        </div>
-
-        <!-- PRODUCT TYPE -->
-
-        <div>
-
-          <label for="product_type" class="field-label">
-
-            Product Type <span class="text-zinc-400 font-normal">(Optional)</span>
-
-          </label>
-
-          <input
-
-            type="text"
-
-            id="product_type"
-
-            class="input-field"
-
-            placeholder="e.g. Earpods, Air Fryer, Running Shoes"
-
-            maxlength="150">
-
-          <p class="helper-text">
-
-            You don't have to know the exact product type. A simple description works too.
-
-          </p>
-
-        </div>
-
-        <!-- PRODUCT NAME -->
-
-        <div>
-
-          <label for="product_name" class="field-label">
-
-            Product Name <span class="required">*</span>
-
-          </label>
-
-          <input
-
-            type="text"
-
-            id="product_name"
-
-            name="product_name"
-
-            class="input-field"
-
-            placeholder="e.g. Samsung Galaxy S25"
-
-            maxlength="200"
-
-            required>
-
-          <p class="helper-text">
-
-            Enter the product you're looking for. If you selected an item from
-
-            the catalogue, its name will be filled in automatically.
-
-          </p>
-
-        </div>
-
-        <!-- BRAND AND MODEL -->
-
-        <div class="grid gap-5 sm:grid-cols-2">
-
-          <div>
-
-            <label for="brand" class="field-label">
-
-              Preferred Brand <span class="text-zinc-400 font-normal">(Optional)</span>
-
-            </label>
-
-            <input
-
-              type="text"
-
-              id="brand"
-
-              class="input-field"
-
-              placeholder="e.g. Apple, Samsung, Nike"
-
-              maxlength="120">
-
-          </div>
-
-          <div>
-
-            <label for="model" class="field-label">
-
-              Model / Version <span class="text-zinc-400 font-normal">(Optional)</span>
-
-            </label>
-
-            <input
-
-              type="text"
-
-              id="model"
-
-              class="input-field"
-
-              placeholder="e.g. AirPods Pro 2"
-
-              maxlength="150">
-
-          </div>
-
-        </div>
-
-        <p class="helper-text -mt-3">
-
-          Brand and model are optional. If you're unsure, leave them blank.
-
-          Our team can help identify suitable options.
-
-        </p>
-
-        <!-- ADDITIONAL DETAILS -->
-
-        <div>
-
-          <label for="product_description" class="field-label">
-
-            Additional Details
-
-            <span class="text-zinc-400 font-normal">(Optional)</span>
-
-          </label>
-
-          <textarea
-
-            id="product_description"
-
-            name="product_description"
-
-            class="input-field"
-
-            rows="4"
-
-            maxlength="3000"
-
-            placeholder="Any particular colour, size, model, specifications or other preferences? Add them here."></textarea>
-
-          <p class="helper-text">
-
-            Don't have all the details? No problem. We can clarify with you during the sourcing process.
-
-          </p>
-
-        </div>
-
-        <!-- QUANTITY AND LINK -->
-
-        <div class="grid gap-5 sm:grid-cols-2">
-
-          <div>
-
-            <label for="quantity" class="field-label">
-
-              Quantity <span class="required">*</span>
-
-            </label>
-
-            <input
-
-              type="number"
-
-              id="quantity"
-
-              name="quantity"
-
-              class="input-field"
-
-              min="1"
-
-              max="10000"
-
-              step="1"
-
-              value="1"
-
-              required>
-
-          </div>
-
-          <div>
-
-            <label for="reference_url" class="field-label">
-
-              Product Link <span class="text-zinc-400 font-normal">(Optional)</span>
-
-            </label>
-
-            <input
-
-              type="url"
-
-              id="reference_url"
-
-              name="reference_url"
-
-              class="input-field"
-
-              placeholder="https://example.com/product">
-
-          </div>
-
-        </div>
-
-        <div class="border-l-2 border-orange-400 bg-orange-50 px-4 py-3">
-
-          <p class="text-xs leading-6 text-zinc-600">
-
-            <strong class="text-zinc-800">A little tip:</strong>
-
-            If you have seen the product somewhere online, paste its link.
-
-            It can make identifying the exact item much easier.
-
-          </p>
-
-        </div>
-
-      </section>
-
-      <!-- BUDGET -->
-
-      <section class="section-card space-y-6">
-
-        <div class="flex items-start gap-4">
-
-          <span class="section-number">03</span>
-
-          <div>
-
-            <h2 class="text-lg font-bold">What's your budget?</h2>
-
-            <p class="mt-1 text-xs leading-6 text-zinc-400">
-
-              Give us a price range to help guide the search.
-
-            </p>
-
-          </div>
-
-        </div>
-
-        <div>
-
-          <label for="budget" class="field-label">
-
-            Budget Amount (KES) <span class="required">*</span>
-
-          </label>
-
-          <div class="relative">
-
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
-
-              KES
-
-            </span>
-
-            <input
-
-              type="number"
-
-              id="budget"
-
-              name="budget"
-
-              class="input-field pl-14"
-
-              min="0"
-
-              max="999999999"
-
-              step="0.01"
-
-              placeholder="e.g. 25000"
-
-              required>
-
-          </div>
-
-        </div>
-
-        <div>
-
-          <label for="budget_type" class="field-label">
-
-            What does this budget cover? <span class="required">*</span>
-
-          </label>
-
-          <select
-
-            id="budget_type"
-
-            name="budget_type"
-
-            class="input-field"
-
-            required>
-
-            <option value="total">Total order budget</option>
-
-            <option value="per_item">Budget per item</option>
-
-          </select>
-
-        </div>
-
-        <p class="helper-text">
-
-          Your budget helps us identify suitable options. Final pricing
-
-          will be confirmed in your quotation before payment.
-
-        </p>
-
-      </section>
-
-      <!-- DELIVERY -->
-
-      <section class="section-card space-y-6">
-
-        <div class="flex items-start gap-4">
-
-          <span class="section-number">04</span>
-
-          <div>
-
-            <h2 class="text-lg font-bold">Where should we deliver?</h2>
-
-            <p class="mt-1 text-xs leading-6 text-zinc-400">
-
-              Tell us where you'd like your order delivered.
-
-            </p>
-
-          </div>
-
-        </div>
-
-        <div>
-
-          <label for="delivery_location" class="field-label">
-
-            Delivery Location <span class="required">*</span>
-
-          </label>
-
-          <textarea
-
-            id="delivery_location"
-
-            name="delivery_location"
-
-            class="input-field"
-
-            rows="3"
-
-            maxlength="1000"
-
-            placeholder="County, town, estate, building or preferred delivery point..."
-
-            required></textarea>
-
-          <p class="helper-text">
-
-            Include enough detail to help us estimate delivery arrangements.
-
-          </p>
-
-        </div>
-
-      </section>
-
-      <!-- CONSENT -->
-
-      <section class="section-card">
-
-        <label class="flex cursor-pointer items-start gap-3">
-
-          <input
-
-            type="checkbox"
-
-            id="consent"
-
-            class="mt-1 h-4 w-4 accent-blue-500"
-
-            required>
-
-          <span class="text-xs leading-6 text-zinc-500">
-
-            I confirm that my information is accurate and authorize
-
-            R-BUY to contact me regarding this order, including sourcing,
-
-            quotations, payment and delivery.
-
-          </span>
-
-        </label>
-
-      </section>
-
-      <!-- SUBMIT -->
-
-      <div>
-
-        <button
-
-          type="submit"
-
-          id="submitButton"
-
-          class="primary-button w-full rounded-xl bg-blue-500 px-6 py-5 font-bold text-white shadow-lg shadow-blue-500/15 disabled:cursor-not-allowed disabled:opacity-50">
-
-          <span id="submitText">Submit My Request ↗</span>
-
-        </button>
-
-        <p class="mt-4 text-center text-xs leading-6 text-zinc-400">
-
-          No immediate payment is required. We'll investigate your request
-
-          and send you a quotation to review first.
-
-        </p>
-
-      </div>
-
-    </form>
-
-    <!-- SUCCESS MESSAGE -->
-
-    <section id="successMessage" class="success-card hidden mt-8 px-6 py-12 text-center sm:px-12">
-
-      <div class="success-check">✓</div>
-
-      <p class="mono mt-7 text-[10px] tracking-widest text-green-600">
-
-        REQUEST RECEIVED
-
-      </p>
-
-      <h2 class="mt-3 text-3xl font-black tracking-tight">
-
-        We've got it!
-
-      </h2>
-
-      <p class="mx-auto mt-4 max-w-md text-sm leading-7 text-zinc-500">
-
-        Your request has been submitted successfully.
-
-        Our team will review it and contact you about the next steps.
-
-      </p>
-
-      <div class="mx-auto mt-8 max-w-sm rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
-
-        <p class="mono text-[9px] tracking-widest text-zinc-400">
-
-          YOUR ORDER REFERENCE
-
-        </p>
-
-        <p id="orderReference" class="mt-3 text-2xl font-black text-blue-500"></p>
-
-        <button
-
-          type="button"
-
-          id="copyReference"
-
-          class="mt-4 text-xs font-semibold text-zinc-500 hover:text-blue-500">
-
-          Copy reference
-
-        </button>
-
-      </div>
-
-      <p class="mt-7 text-sm leading-7 text-zinc-500">
-
-        Keep your reference number for future communication.
-
-      </p>
-
-      <p class="handwritten mt-5 text-2xl text-orange-500">
-
-        Thank you for choosing R-BUY.
-
-      </p>
-
-      <a
-
-        href="https://benjaminmwangi180-hub.github.io/R-BUY/"
-
-        class="primary-button mt-8 inline-block rounded-lg bg-blue-500 px-7 py-4 text-sm font-bold text-white">
-
-        Return to Homepage ↗
-
-      </a>
-
-    </section>
-
-  </section>
+  </section>
 
 </main>
+
 
 <!-- FOOTER -->
 
 <footer class="border-t border-zinc-200 bg-white">
 
-  <div class="mx-auto flex max-w-7xl flex-col justify-between gap-5 px-5 py-9 sm:flex-row sm:items-center sm:px-8">
+  <div class="mx-auto flex max-w-7xl flex-col justify-between gap-5 px-5 py-9 sm:flex-row sm:items-center sm:px-8">
 
-    <div>
+    <div>
+      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+         class="text-2xl font-black">
+        R<span class="text-blue-500">-</span>BUY<span class="text-blue-500">.</span>
+      </a>
 
-      <a href="https://benjaminmwangi180-hub.github.io/R-BUY/"
+      <p class="mt-2 text-xs text-zinc-400">
+        You can buy anything.
+      </p>
+    </div>
 
-         class="text-2xl font-black">
+    <p class="mono text-[9px] tracking-widest text-zinc-400">
+      © <span id="year"></span> R-BUY / RETAIL WITHOUT LIMITS.
+    </p>
 
-        R<span class="text-blue-500">-</span>BUY<span class="text-blue-500">.</span>
-
-      </a>
-
-      <p class="mt-2 text-xs text-zinc-400">
-
-        You can buy anything.
-
-      </p>
-
-    </div>
-
-    <p class="mono text-[9px] tracking-widest text-zinc-400">
-
-      © <span id="year"></span> R-BUY / RETAIL WITHOUT LIMITS.
-
-    </p>
-
-  </div>
+  </div>
 
 </footer>
+
 
 <!-- FLOATING CART -->
 
 <div class="floating-cart" aria-hidden="true">
 
-  <div class="flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 shadow-lg">
+  <div class="flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 shadow-lg">
 
-    <svg width="27" height="27" viewBox="0 0 40 40" fill="none">
+    <svg width="27" height="27" viewBox="0 0 40 40" fill="none">
+      <path d="M3 5H8L13 26H31L36 12H10"
+        stroke="#3B82F6"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
 
-      <path d="M3 5H8L13 26H31L36 12H10"
+      <circle cx="17" cy="33" r="3" fill="#3B82F6"/>
+      <circle cx="29" cy="33" r="3" fill="#3B82F6"/>
+    </svg>
 
-        stroke="#3B82F6"
+    <span class="mono text-[9px] font-bold tracking-widest text-blue-500">
+      R-BUY
+    </span>
 
-        stroke-width="2.5"
-
-        stroke-linecap="round"
-
-        stroke-linejoin="round"/>
-
-      <circle cx="17" cy="33" r="3" fill="#3B82F6"/>
-
-      <circle cx="29" cy="33" r="3" fill="#3B82F6"/>
-
-    </svg>
-
-    <span class="mono text-[9px] font-bold tracking-widest text-blue-500">
-
-      R-BUY
-
-    </span>
-
-  </div>
+  </div>
 
 </div>
+
 
 <!-- JAVASCRIPT -->
 
 <script>
 
-  // =========================================
+  // =========================================
+  // SUPABASE CONFIGURATION
+  // =========================================
 
-  // SUPABASE CONFIGURATION
+  const SUPABASE_URL =
+    "https://ixuohpgqpuvjdbigmhje.supabase.co";
 
-  // =========================================
+  const SUPABASE_KEY =
+    "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
 
-  const SUPABASE_URL =
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
-    "https://ixuohpgqpuvjdbigmhje.supabase.co";
 
-  const SUPABASE_KEY =
+  // =========================================
+  // ELEMENTS
+  // =========================================
 
-    "sb_publishable_39FVpTmUPUsSqGAysBbP1A_xqF0nFaA";
+  const orderForm =
+    document.getElementById("orderForm");
 
-  const supabaseClient =
+  const submitButton =
+    document.getElementById("submitButton");
 
-    window.supabase.createClient(
+  const submitText =
+    document.getElementById("submitText");
 
-      SUPABASE_URL,
+  const successMessage =
+    document.getElementById("successMessage");
 
-      SUPABASE_KEY
+  const orderReferenceElement =
+    document.getElementById("orderReference");
 
-    );
+  const productNameInput =
+    document.getElementById("product_name");
 
-  // =========================================
+  const categoryInput =
+    document.getElementById("category");
 
-  // ELEMENTS
+  const categoryError =
+    document.getElementById("categoryError");
 
-  // =========================================
+  const categoryStatus =
+    document.getElementById("categoryStatus");
 
-  const orderForm =
+  const categoryCards =
+    document.querySelectorAll(".category-option");
 
-    document.getElementById("orderForm");
+  const catalogueSelection =
+    document.getElementById("catalogueSelection");
 
-  const submitButton =
+  const catalogueSummary =
+    document.getElementById("catalogueSummary");
 
-    document.getElementById("submitButton");
 
-  const submitText =
+  // =========================================
+  // URL PREFILL
+  // Supports landing-page catalogue parameters:
+  // product, category, subcategory, type,
+  // brand, model, delivery_location
+  // =========================================
 
-    document.getElementById("submitText");
+  const urlParams =
+    new URLSearchParams(window.location.search);
 
-  const successMessage =
+  function getParam(name) {
+    return (urlParams.get(name) || "").trim();
+  }
 
-    document.getElementById("successMessage");
+  const productPrefill = getParam("product");
+  const categoryPrefill = getParam("category");
+  const subcategoryPrefill = getParam("subcategory");
+  const typePrefill = getParam("type");
+  const brandPrefill = getParam("brand");
+  const modelPrefill = getParam("model");
+  const locationPrefill = getParam("delivery_location");
 
-  const orderReferenceElement =
 
-    document.getElementById("orderReference");
+  // Fill editable fields
 
-  const productNameInput =
+  if (productPrefill) {
+    productNameInput.value = productPrefill;
+  }
 
-    document.getElementById("product_name");
+  if (subcategoryPrefill) {
+    document.getElementById("subcategory").value =
+      subcategoryPrefill;
+  }
 
-  const categoryInput =
+  if (typePrefill) {
+    document.getElementById("product_type").value =
+      typePrefill;
+  }
 
-    document.getElementById("category");
+  if (brandPrefill) {
+    document.getElementById("brand").value =
+      brandPrefill;
+  }
 
-  const categoryError =
+  if (modelPrefill) {
+    document.getElementById("model").value =
+      modelPrefill;
+  }
 
-    document.getElementById("categoryError");
+  if (locationPrefill) {
+    document.getElementById("delivery_location").value =
+      locationPrefill;
+  }
 
-  const categoryStatus =
 
-    document.getElementById("categoryStatus");
+  // Show catalogue selection summary
 
-  const categoryCards =
+  const catalogueDetails = [
+    categoryPrefill,
+    subcategoryPrefill,
+    typePrefill,
+    brandPrefill,
+    modelPrefill
+  ].filter(Boolean);
 
-    document.querySelectorAll(".category-option");
+  if (catalogueDetails.length > 0 || productPrefill) {
 
-  const catalogueSelection =
+    catalogueSelection.classList.remove("hidden");
 
-    document.getElementById("catalogueSelection");
+    const summaryParts = [];
 
-  const catalogueSummary =
+    if (categoryPrefill) {
+      summaryParts.push("Category: " + categoryPrefill);
+    }
 
-    document.getElementById("catalogueSummary");
+    if (subcategoryPrefill) {
+      summaryParts.push("Subcategory: " + subcategoryPrefill);
+    }
 
-  // =========================================
+    if (typePrefill) {
+      summaryParts.push("Type: " + typePrefill);
+    }
 
-  // URL PREFILL
+    if (productPrefill) {
+      summaryParts.push("Product: " + productPrefill);
+    }
 
-  // Supports landing-page catalogue parameters:
+    if (brandPrefill) {
+      summaryParts.push("Brand: " + brandPrefill);
+    }
 
-  // product, category, subcategory, type,
+    if (modelPrefill) {
+      summaryParts.push("Model: " + modelPrefill);
+    }
 
-  // brand, model, delivery_location
+    catalogueSummary.textContent =
+      summaryParts.join("  •  ");
 
-  // =========================================
+  }
 
-  const urlParams =
 
-    new URLSearchParams(window.location.search);
+  // =========================================
+  // CATEGORY SELECTION
+  // =========================================
 
-  function getParam(name) {
+  function selectCategory(category) {
 
-    return (urlParams.get(name) || "").trim();
+    const matchingCard = Array.from(categoryCards).find(card => {
+      return card.dataset.category.toLowerCase() === category.toLowerCase();
+    });
 
-  }
+    if (!matchingCard) {
+      return false;
+    }
 
-  const productPrefill = getParam("product");
+    categoryInput.value = matchingCard.dataset.category;
 
-  const categoryPrefill = getParam("category");
+    categoryCards.forEach(card => {
+      card.classList.remove("selected");
+      card.setAttribute("aria-pressed", "false");
+    });
 
-  const subcategoryPrefill = getParam("subcategory");
+    matchingCard.classList.add("selected");
+    matchingCard.setAttribute("aria-pressed", "true");
 
-  const typePrefill = getParam("type");
+    categoryError.classList.add("hidden");
 
-  const brandPrefill = getParam("brand");
+    categoryStatus.textContent =
+      "Selected category: " + matchingCard.dataset.category;
 
-  const modelPrefill = getParam("model");
+    categoryStatus.classList.remove("text-red-500");
+    categoryStatus.classList.add("text-blue-500");
 
-  const locationPrefill = getParam("delivery_location");
+    updateProgress();
 
-  // Fill editable fields
+    return true;
+  }
 
-  if (productPrefill) {
 
-    productNameInput.value = productPrefill;
+  categoryCards.forEach(card => {
 
-  }
+    card.setAttribute("aria-pressed", "false");
 
-  if (subcategoryPrefill) {
+    card.addEventListener("click", function() {
+      selectCategory(this.dataset.category);
+    });
 
-    document.getElementById("subcategory").value =
+  });
 
-      subcategoryPrefill;
 
-  }
+  // Automatically select category from landing page.
 
-  if (typePrefill) {
+  if (categoryPrefill) {
+    const selected = selectCategory(categoryPrefill);
 
-    document.getElementById("product_type").value =
+    if (!selected) {
+      categoryStatus.textContent =
+        "Please choose the category that best describes your product.";
 
-      typePrefill;
+      categoryInput.value = "";
+    }
+  }
 
-  }
 
-  if (brandPrefill) {
+  // =========================================
+  // PROGRESS INDICATOR
+  // =========================================
 
-    document.getElementById("brand").value =
+  const progressFill =
+    document.getElementById("progressFill");
 
-      brandPrefill;
+  const progressText =
+    document.getElementById("progressText");
 
-  }
+  const trackedFields = [
+    "customer_name",
+    "whatsapp",
+    "category",
+    "product_name",
+    "quantity",
+    "budget",
+    "delivery_location"
+  ];
 
-  if (modelPrefill) {
+  function updateProgress() {
 
-    document.getElementById("model").value =
+    let completed = 0;
 
-      modelPrefill;
+    trackedFields.forEach(id => {
 
-  }
+      const field = document.getElementById(id);
 
-  if (locationPrefill) {
+      if (field && String(field.value).trim() !== "") {
+        completed++;
+      }
 
-    document.getElementById("delivery_location").value =
+    });
 
-      locationPrefill;
+    const percentage =
+      Math.round((completed / trackedFields.length) * 100);
 
-  }
+    progressFill.style.width = percentage + "%";
 
-  // Show catalogue selection summary
+    progressText.textContent =
+      percentage + "% of the main details completed";
 
-  const catalogueDetails = [
+  }
 
-    categoryPrefill,
 
-    subcategoryPrefill,
+  orderForm.querySelectorAll("input, textarea, select").forEach(field => {
+    field.addEventListener("input", updateProgress);
+    field.addEventListener("change", updateProgress);
+  });
 
-    typePrefill,
 
-    brandPrefill,
+  categoryCards.forEach(card => {
+    card.addEventListener("click", updateProgress);
+  });
 
-    modelPrefill
 
-  ].filter(Boolean);
+  updateProgress();
 
-  if (catalogueDetails.length > 0 || productPrefill) {
 
-    catalogueSelection.classList.remove("hidden");
+  // =========================================
+  // ORDER SUBMISSION
+  // =========================================
 
-    const summaryParts = [];
+  orderForm.addEventListener("submit", async function(event) {
 
-    if (categoryPrefill) {
+    event.preventDefault();
 
-      summaryParts.push("Category: " + categoryPrefill);
+    if (!orderForm.checkValidity()) {
+      orderForm.reportValidity();
+      return;
+    }
 
-    }
 
-    if (subcategoryPrefill) {
+    const customerName =
+      document.getElementById("customer_name").value.trim();
 
-      summaryParts.push("Subcategory: " + subcategoryPrefill);
+    const whatsapp =
+      document.getElementById("whatsapp").value.trim();
 
-    }
+    const email =
+      document.getElementById("email").value.trim();
 
-    if (typePrefill) {
+    const productName =
+      productNameInput.value.trim();
 
-      summaryParts.push("Type: " + typePrefill);
+    const productDescription =
+      document.getElementById("product_description").value.trim();
 
-    }
+    const category =
+      categoryInput.value;
 
-    if (productPrefill) {
+    const subcategory =
+      document.getElementById("subcategory").value.trim();
 
-      summaryParts.push("Product: " + productPrefill);
+    const productType =
+      document.getElementById("product_type").value.trim();
 
-    }
+    const brand =
+      document.getElementById("brand").value.trim();
 
-    if (brandPrefill) {
+    const model =
+      document.getElementById("model").value.trim();
 
-      summaryParts.push("Brand: " + brandPrefill);
+    const quantity =
+      Number(document.getElementById("quantity").value);
 
-    }
+    const budget =
+      Number(document.getElementById("budget").value);
 
-    if (modelPrefill) {
+    const budgetType =
+      document.getElementById("budget_type").value;
 
-      summaryParts.push("Model: " + modelPrefill);
+    const referenceUrl =
+      document.getElementById("reference_url").value.trim();
 
-    }
+    const deliveryLocation =
+      document.getElementById("delivery_location").value.trim();
 
-    catalogueSummary.textContent =
 
-      summaryParts.join("  •  ");
+    // CATEGORY VALIDATION
 
-  }
+    if (!category) {
 
-  // =========================================
+      categoryError.classList.remove("hidden");
 
-  // CATEGORY SELECTION
+      document.getElementById("categoryGrid").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
 
-  // =========================================
+      return;
 
-  function selectCategory(category) {
+    }
 
-    const matchingCard = Array.from(categoryCards).find(card => {
 
-      return card.dataset.category.toLowerCase() === category.toLowerCase();
+    // OTHER VALIDATION
 
-    });
+    if (customerName.length < 2) {
+      alert("Please enter your full name.");
+      return;
+    }
 
-    if (!matchingCard) {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
+      alert("Please enter a valid quantity.");
+      return;
+    }
 
-      return false;
+    if (!Number.isFinite(budget) || budget < 0) {
+      alert("Please enter a valid budget.");
+      return;
+    }
 
-    }
 
-    categoryInput.value = matchingCard.dataset.category;
+    // COMBINE CATALOGUE DETAILS WITH DESCRIPTION
+    // This keeps the existing database schema unchanged.
 
-    categoryCards.forEach(card => {
+    const catalogueDescription = [];
 
-      card.classList.remove("selected");
+    if (subcategory) {
+      catalogueDescription.push("Subcategory: " + subcategory);
+    }
 
-      card.setAttribute("aria-pressed", "false");
+    if (productType) {
+      catalogueDescription.push("Product type: " + productType);
+    }
 
-    });
+    if (brand) {
+      catalogueDescription.push("Preferred brand: " + brand);
+    }
 
-    matchingCard.classList.add("selected");
+    if (model) {
+      catalogueDescription.push("Model: " + model);
+    }
 
-    matchingCard.setAttribute("aria-pressed", "true");
+    if (productDescription) {
+      catalogueDescription.push("Customer notes: " + productDescription);
+    }
 
-    categoryError.classList.add("hidden");
+    const finalProductDescription =
+      catalogueDescription.length > 0
+        ? catalogueDescription.join("\n\n")
+        : "No additional specifications provided.";
 
-    categoryStatus.textContent =
 
-      "Selected category: " + matchingCard.dataset.category;
+    // UUID AND REFERENCE
 
-    categoryStatus.classList.remove("text-red-500");
+    const orderId = crypto.randomUUID();
 
-    categoryStatus.classList.add("text-blue-500");
+    const orderReference =
+      "RBUY-" + orderId.substring(0, 8).toUpperCase();
 
-    updateProgress();
 
-    return true;
+    // DATABASE PAYLOAD
+    // Existing field names are preserved.
 
-  }
+    const orderData = {
 
-  categoryCards.forEach(card => {
+      id: orderId,
 
-    card.setAttribute("aria-pressed", "false");
+      customer_name: customerName,
 
-    card.addEventListener("click", function() {
+      email: email || null,
 
-      selectCategory(this.dataset.category);
+      category: category,
 
-    });
+      product_name: productName,
 
-  });
+      product_description: finalProductDescription,
 
-  // Automatically select category from landing page.
+      quantity: quantity,
 
-  if (categoryPrefill) {
+      budget: budget,
 
-    const selected = selectCategory(categoryPrefill);
+      budget_type: budgetType,
 
-    if (!selected) {
+      reference_url: referenceUrl || null,
 
-      categoryStatus.textContent =
+      whatsapp: whatsapp,
 
-        "Please choose the category that best describes your product.";
+      delivery_location: deliveryLocation,
 
-      categoryInput.value = "";
+      status: "pending_review",
 
-    }
+      payment_status: "unpaid"
 
-  }
+    };
 
-  // =========================================
 
-  // PROGRESS INDICATOR
+    submitButton.disabled = true;
 
-  // =========================================
+    submitText.textContent = "Submitting your request...";
 
-  const progressFill =
 
-    document.getElementById("progressFill");
+    try {
 
-  const progressText =
+      const { error } = await supabaseClient
+        .from("orders")
+        .insert([orderData]);
 
-    document.getElementById("progressText");
+      if (error) {
+        throw error;
+      }
 
-  const trackedFields = [
 
-    "customer_name",
+      // SHOW SUCCESS
 
-    "whatsapp",
+      orderReferenceElement.textContent =
+        orderReference;
 
-    "category",
+      orderForm.classList.add("hidden");
 
-    "product_name",
+      document.querySelector(".progress-line").classList.add("hidden");
 
-    "quantity",
+      progressText.classList.add("hidden");
 
-    "budget",
+      successMessage.classList.remove("hidden");
 
-    "delivery_location"
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
 
-  ];
 
-  function updateProgress() {
+    } catch (error) {
 
-    let completed = 0;
+      console.error("Order submission error:", error);
 
-    trackedFields.forEach(id => {
+      alert(
+        "We could not submit your order.\n\n" +
+        error.message +
+        "\n\nPlease try again."
+      );
 
-      const field = document.getElementById(id);
+      submitButton.disabled = false;
 
-      if (field && String(field.value).trim() !== "") {
+      submitText.textContent = "Submit My Request ↗";
 
-        completed++;
+    }
 
-      }
+  });
 
-    });
 
-    const percentage =
+  // =========================================
+  // COPY ORDER REFERENCE
+  // =========================================
 
-      Math.round((completed / trackedFields.length) * 100);
+  document.getElementById("copyReference")
+    .addEventListener("click", async function() {
 
-    progressFill.style.width = percentage + "%";
+      const reference =
+        orderReferenceElement.textContent;
 
-    progressText.textContent =
+      try {
 
-      percentage + "% of the main details completed";
+        await navigator.clipboard.writeText(reference);
 
-  }
+        this.textContent = "Copied!";
 
-  orderForm.querySelectorAll("input, textarea, select").forEach(field => {
+      } catch {
 
-    field.addEventListener("input", updateProgress);
+        alert("Your order reference is: " + reference);
 
-    field.addEventListener("change", updateProgress);
+      }
 
-  });
+    });
 
-  categoryCards.forEach(card => {
 
-    card.addEventListener("click", updateProgress);
+  // =========================================
+  // COPYRIGHT YEAR
+  // =========================================
 
-  });
-
-  updateProgress();
-
-  // =========================================
-
-  // ORDER SUBMISSION
-
-  // =========================================
-
-  orderForm.addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    if (!orderForm.checkValidity()) {
-
-      orderForm.reportValidity();
-
-      return;
-
-    }
-
-    const customerName =
-
-      document.getElementById("customer_name").value.trim();
-
-    const whatsapp =
-
-      document.getElementById("whatsapp").value.trim();
-
-    const email =
-
-      document.getElementById("email").value.trim();
-
-    const productName =
-
-      productNameInput.value.trim();
-
-    const productDescription =
-
-      document.getElementById("product_description").value.trim();
-
-    const category =
-
-      categoryInput.value;
-
-    const subcategory =
-
-      document.getElementById("subcategory").value.trim();
-
-    const productType =
-
-      document.getElementById("product_type").value.trim();
-
-    const brand =
-
-      document.getElementById("brand").value.trim();
-
-    const model =
-
-      document.getElementById("model").value.trim();
-
-    const quantity =
-
-      Number(document.getElementById("quantity").value);
-
-    const budget =
-
-      Number(document.getElementById("budget").value);
-
-    const budgetType =
-
-      document.getElementById("budget_type").value;
-
-    const referenceUrl =
-
-      document.getElementById("reference_url").value.trim();
-
-    const deliveryLocation =
-
-      document.getElementById("delivery_location").value.trim();
-
-    // CATEGORY VALIDATION
-
-    if (!category) {
-
-      categoryError.classList.remove("hidden");
-
-      document.getElementById("categoryGrid").scrollIntoView({
-
-        behavior: "smooth",
-
-        block: "center"
-
-      });
-
-      return;
-
-    }
-
-    // OTHER VALIDATION
-
-    if (customerName.length < 2) {
-
-      alert("Please enter your full name.");
-
-      return;
-
-    }
-
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
-
-      alert("Please enter a valid quantity.");
-
-      return;
-
-    }
-
-    if (!Number.isFinite(budget) || budget < 0) {
-
-      alert("Please enter a valid budget.");
-
-      return;
-
-    }
-
-    // COMBINE CATALOGUE DETAILS WITH DESCRIPTION
-
-    // This keeps the existing database schema unchanged.
-
-    const catalogueDescription = [];
-
-    if (subcategory) {
-
-      catalogueDescription.push("Subcategory: " + subcategory);
-
-    }
-
-    if (productType) {
-
-      catalogueDescription.push("Product type: " + productType);
-
-    }
-
-    if (brand) {
-
-      catalogueDescription.push("Preferred brand: " + brand);
-
-    }
-
-    if (model) {
-
-      catalogueDescription.push("Model: " + model);
-
-    }
-
-    if (productDescription) {
-
-      catalogueDescription.push("Customer notes: " + productDescription);
-
-    }
-
-    const finalProductDescription =
-
-      catalogueDescription.length > 0
-
-        ? catalogueDescription.join("\n\n")
-
-        : "No additional specifications provided.";
-
-    // UUID AND REFERENCE
-
-    const orderId = crypto.randomUUID();
-
-    const orderReference =
-
-      "RBUY-" + orderId.substring(0, 8).toUpperCase();
-
-    // DATABASE PAYLOAD
-
-    // Existing field names are preserved.
-
-    const orderData = {
-
-      id: orderId,
-
-      customer_name: customerName,
-
-      email: email || null,
-
-      category: category,
-
-      product_name: productName,
-
-      product_description: finalProductDescription,
-
-      quantity: quantity,
-
-      budget: budget,
-
-      budget_type: budgetType,
-
-      reference_url: referenceUrl || null,
-
-      whatsapp: whatsapp,
-
-      delivery_location: deliveryLocation,
-
-      status: "pending_review",
-
-      payment_status: "unpaid"
-
-    };
-
-    submitButton.disabled = true;
-
-    submitText.textContent = "Submitting your request...";
-
-    try {
-
-      const { error } = await supabaseClient
-
-        .from("orders")
-
-        .insert([orderData]);
-
-      if (error) {
-
-        throw error;
-
-      }
-
-      // SHOW SUCCESS
-
-      orderReferenceElement.textContent =
-
-        orderReference;
-
-      orderForm.classList.add("hidden");
-
-      document.querySelector(".progress-line").classList.add("hidden");
-
-      progressText.classList.add("hidden");
-
-      successMessage.classList.remove("hidden");
-
-      window.scrollTo({
-
-        top: 0,
-
-        behavior: "smooth"
-
-      });
-
-    } catch (error) {
-
-      console.error("Order submission error:", error);
-
-      alert(
-
-        "We could not submit your order.\n\n" +
-
-        error.message +
-
-        "\n\nPlease try again."
-
-      );
-
-      submitButton.disabled = false;
-
-      submitText.textContent = "Submit My Request ↗";
-
-    }
-
-  });
-
-  // =========================================
-
-  // COPY ORDER REFERENCE
-
-  // =========================================
-
-  document.getElementById("copyReference")
-
-    .addEventListener("click", async function() {
-
-      const reference =
-
-        orderReferenceElement.textContent;
-
-      try {
-
-        await navigator.clipboard.writeText(reference);
-
-        this.textContent = "Copied!";
-
-      } catch {
-
-        alert("Your order reference is: " + reference);
-
-      }
-
-    });
-
-  // =========================================
-
-  // COPYRIGHT YEAR
-
-  // =========================================
-
-  document.getElementById("year").textContent =
-
-    new Date().getFullYear();
+  document.getElementById("year").textContent =
+    new Date().getFullYear();
 
 </script>
 
 </body>
-
 </html>
